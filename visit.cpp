@@ -3,7 +3,7 @@
 
 using namespace std;
 
-visit::visit(customer &cust, int arrival) : 
+visit::visit(const customer &cust, int arrival) : 
 	cust(cust), arrival(arrival), departure(fmax(arrival, cust.start) + cust.unload), feasible(departure <= cust.end) {
 }
 

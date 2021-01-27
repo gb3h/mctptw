@@ -1,5 +1,6 @@
 #include <algorithm>
-
+#include <iostream>
+#include <set>
 #include "solution.h"
 
 using namespace std;
@@ -26,25 +27,38 @@ void solution::random(const problem& input){
 void solution::solomon(const problem& input, double mu, double lambda, double alpha1){
 	clear();
 
-	set<customer> unrouted;
+	set<int> unrouted;
 	for(int id = 1; id <= input.getNumCusto(); id++) unrouted.insert(id);
+
+	route initialRoute;
+	customer depot = input[0];
+	visit depotStop = visit(depot, 0);
+
+	initialRoute.visits.push_back(depotStop);
+	initialRoute.capacity = input.getCapacity();
+
+	routes.push_back(initialRoute);
+
 	while (!unrouted.empty()) {
-		customer bestUnroutedCustomer;
+		int bestUnroutedCustomer;
 		double bestFitness;
 		route bestRoute;
 		int bestPositionOnRoute;
 
 		for (auto currCustomer: unrouted) {
 			for (auto route: routes) {
-				for (int prev = 0; i < route.size(); i++) {
-				
-
-
+				for (int prev = 0; prev < route.visits.size(); prev++) {
+					bool feasible = route.check_push_forward(prev, input[currCustomer], input);
+					cout << "----------" << endl;
+					cout << "Feasible: " << (feasible && route.feasible) << endl;
+					route.print(stdout);
+					cout << "Prev : " << prev << " cid: " << currCustomer << endl;
+					cout << "----------" << endl;
 				}
 			}
 		}
 		// insert bestUnroutedCustomer in respective pos
-
+		break;
 
 	}
 

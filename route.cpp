@@ -5,10 +5,10 @@
 using namespace std;
 
 void route::print(FILE *fp) const {
-	fprintf(fp, "%d customers, distance = %.3f :", visits.size(), distance);
+	fprintf(fp, "%d customers, distance = %.3f :", visits.size() - 1, distance);
 	
-	for(vector<visit>::const_iterator it = visits.begin(); it != visits.end(); ++it){
-		fprintf(fp, " %d", it);
+	for(auto visit: visits){
+		fprintf(fp, " %d", visit.cust.id);
 	}
 
 	fprintf(fp, "\n");
@@ -16,11 +16,11 @@ void route::print(FILE *fp) const {
 
 void route::clear(){
 	visits.clear();
-	distance = waiting = load = 0;
+	distance = waiting = load = capacity = 0;
 	modified = true;
 }
 
-bool route::push_forward_helper(int i_index, customer &u, problem &input, bool set) {
+bool route::push_forward_helper(int i_index, const customer &u, const problem &input, bool set) {
 	double travelTime = input.getDistance(visits[i_index].cust.id, u.id);
 	int arrival = visits[i_index].departure + travelTime;
 	visit vis = visit(u, arrival);
@@ -64,10 +64,10 @@ bool route::push_forward_helper(int i_index, customer &u, problem &input, bool s
 	return true;
 }
 
-bool route::get_push_forward_feasibility(int i_index, customer &u, problem &input) {
+bool route::check_push_forward(int i_index, const customer &u, const problem &input) {
 	return push_forward_helper(i_index, u, input, false);
 }
 
-bool route::set_push_forward(int i_index, customer &u, problem &input) {
+bool route::set_push_forward(int i_index, const customer &u, const problem &input) {
 	return push_forward_helper(i_index, u, input, true);
 }
