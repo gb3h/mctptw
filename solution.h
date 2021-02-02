@@ -13,13 +13,13 @@ public:
 	void print(FILE *fp) const;
 	void clear();
 	void random(const problem& input);
-	void solomon(const problem& input, double mu = 1, double lambda = 2, double alpha1 = 0);
+	void solomon(const problem& input, double mu = 1, double lambda = 2, double alpha_1 = 0.5);
 	static int cmp(const solution &solA, const solution &solB, const problem &input);
 	static bool fdominate(const solution &solA, const solution &solB);
 	bool operator == (const solution &another) const;
 	bool operator < (const solution &another) const;
 
-	std::list<route> routes;
+	std::vector<route> routes;
 	double totalDistance, totalWaiting;
 	int unbalancedCapacity, exceededCapacity;
 	bool feasible;

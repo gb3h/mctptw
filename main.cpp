@@ -1,10 +1,10 @@
 #include <cstdio>
 #include <ctime>
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <list>
-#include <algorithm>
+// #include <cmath>
+// #include <cstdlib>
+// #include <vector>
+// #include <list>
+// #include <algorithm>
 #include "solution.h"
 #include "problem.h"
 
@@ -18,16 +18,7 @@ int main(int argc, char *argv[]){
 	}
 
 	clock_t start = clock();
-	// unsigned int seed;
-	// if(argc > 2){
-	// 	seed = (unsigned int)atoi(argv[2]);
-	// }else{
-	// 	seed = (unsigned int)time(NULL);
-	// }
-	// printf("Seed = %d\n", seed);
-	// srand(seed);
 
-	// load input data
 	problem input;
 	if( !input.load(argv[1]) ){
 		puts("Unable to open input file!");

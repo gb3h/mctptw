@@ -9,7 +9,7 @@ void solution::print(FILE *fp) const {
 	fprintf(fp, "[%d routes, distance = %.3f, unbalance = %d, %s]\n",
 		routes.size(), totalDistance, unbalancedCapacity, (feasible) ? "feasible" : "infeasible");
 	
-	for(list<route>::const_iterator it = routes.begin(); it != routes.end(); ++it){
+	for(vector<route>::const_iterator it = routes.begin(); it != routes.end(); ++it){
 		it->print(fp);
 	}
 }
@@ -24,7 +24,7 @@ void solution::random(const problem& input){
 
 // Solomon's I1 insertion heuristic (1987)
 // Ref.: "Algorithms for the Vehicle Routing and Scheduling Problems with Time Window Constraints"
-void solution::solomon(const problem& input, double mu, double lambda, double alpha1){
+void solution::solomon(const problem& input, double mu, double lambda, double alpha_1){
 	clear();
 
 	set<int> unrouted;
@@ -37,29 +37,71 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 	initialRoute.visits.push_back(depotStop);
 	initialRoute.capacity = input.getCapacity();
 
-	routes.push_back(initialRoute);
+	bool flip = false;
+
+	vector<route*> newRoutes;
+	newRoutes.push_back(&initialRoute);
 
 	while (!unrouted.empty()) {
-		int bestUnroutedCustomer;
-		double bestFitness;
-		route bestRoute;
+		int bestUnroutedCustomer = 0;
+		double bestFitness = -1;
+		route *bestRoute;
 		int bestPositionOnRoute;
 
 		for (auto currCustomer: unrouted) {
-			for (auto route: routes) {
-				for (int prev = 0; prev < route.visits.size(); prev++) {
-					bool feasible = route.check_push_forward(prev, input[currCustomer], input);
+			for (auto route: newRoutes) {
+				for (int prev = 0; prev < route->visits.size(); prev++) {
+					bool feasible = route->check_push_forward(prev, input[currCustomer], input);
+					double fitness = -1;
+					if (feasible) {
+						fitness = route->get_fitness(prev, input[currCustomer], input, mu, lambda, alpha_1);
+						if ((bestFitness < 0) || (fitness > 0 && fitness < bestFitness)) {
+							bestFitness = fitness;
+							bestRoute = route;
+							bestPositionOnRoute = prev;
+							bestUnroutedCustomer = currCustomer;
+						}
+					}
 					cout << "----------" << endl;
-					cout << "Feasible: " << (feasible && route.feasible) << endl;
-					route.print(stdout);
-					cout << "Prev : " << prev << " cid: " << currCustomer << endl;
+					cout << (feasible ? "Feasible" : "Infeasible") << endl;
+					// route->print(stdout);
+					cout << "Prev : " << prev << " cid: " << currCustomer << " fitness: " << fitness << endl;
 					cout << "----------" << endl;
 				}
 			}
 		}
 		// insert bestUnroutedCustomer in respective pos
-		break;
-
+		if (bestFitness > 0) {
+			bestRoute->print(stdout);
+			cout << "================================" << endl;
+			cout << "Conducting insertion" << endl;
+			cout << "Conducting insertion" << endl;
+			cout << "Best Unrouted: " << bestUnroutedCustomer << endl;
+			cout << "Conducting insertion" << endl;
+			cout << "================================" << endl;
+			bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
+			bestRoute->print(stdout);
+			unrouted.erase(bestUnroutedCustomer);
+			flip = true;
+		} else if (flip) {
+			flip = false;
+			cout << "================================" << endl;
+			cout << "NO FEASIBLE INSERTIONS" << endl;
+			cout << "NO FEASIBLE INSERTIONS" << endl;
+			cout << "NO FEASIBLE INSERTIONS" << endl;
+			cout << "NO FEASIBLE INSERTIONS" << endl;
+			cout << "================================" << endl;
+			route newRoute;
+			customer depot = input[0];
+			visit depotStop = visit(depot, 0);
+			newRoute.visits.push_back(depotStop);
+			newRoute.capacity = input.getCapacity();
+			newRoutes.push_back(&newRoute);
+			for (auto route: newRoutes) {
+				route->print(stdout);
+			}
+		}
+		// break;
 	}
 
 }

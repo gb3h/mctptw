@@ -5,9 +5,10 @@
 class visit{
 public:
 	visit(const customer &cust, int arrival);
-	int get_push_forward_new_departure(int newArrival); // return new departure time given new arrival time (does not update state)
-	bool check_push_forward_feasiblity(int newArrival); // return new departure time given new arrival time (does not update state)
-	bool push_forward(int newArrival); // returns feasiblity of the updated push forward, and updates
+
+	int get_next_push_forward(int pushForward); // return next PF 
+	bool check_push_forward_feasiblity(int pushForward); // return true if PF is still feasible for delivery
+	int push_forward(int pushForward); // updates current visit with PF and returns next PF
 
 	customer cust;
 	int arrival, departure;

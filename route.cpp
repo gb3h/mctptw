@@ -1,5 +1,6 @@
 #include <algorithm>
-
+#include <iostream>
+#include <cmath>
 #include "route.h"
 
 using namespace std;
@@ -20,39 +21,75 @@ void route::clear(){
 	modified = true;
 }
 
-bool route::push_forward_helper(int i_index, const customer &u, const problem &input, bool set) {
+visit route::initialise_insertion(int i_index, const customer &u, const problem &input) {
 	double travelTime = input.getDistance(visits[i_index].cust.id, u.id);
 	int arrival = visits[i_index].departure + travelTime;
 	visit vis = visit(u, arrival);
+	return vis;
+}
+
+bool route::push_forward_helper(int i_index, const customer &u, const problem &input, bool set) {
+	visit vis = initialise_insertion(i_index, u, input);
 	if (!vis.feasible) {
 		return false;
 	}
 
-	visit &curr = vis;
-	visit &next = vis;
-	int newArrival, newDeparture;
-	newDeparture = curr.departure;
+	visit curr = vis;
+	visit next = vis;
+	int oldArrival, newArrival, pushForward, nextPushForward;
+	double travelTime;
+	int oldStart, newStart;
+	if (i_index + 1 < visits.size()) {
+		next = visits[i_index + 1];
+		travelTime = input.getDistance(next.cust.id, curr.cust.id);
+		oldArrival = next.arrival;
+		newArrival = curr.departure + travelTime;
+		oldStart = fmax(oldArrival, next.cust.start);
+		newStart = fmax(newArrival, next.cust.start);
+		pushForward = newStart - oldStart;
+		// cout << "INITIAL PUSH FORWARD: " << pushForward << endl;
+	} else {
+		int latestDepotArrival = input[0].end - input[0].unload;
+		travelTime = input.getDistance(0, curr.cust.id);
+		if (!(curr.departure + travelTime <= latestDepotArrival)) {
+			cout << curr.cust.id << " " << travelTime << " " << pushForward << " " << latestDepotArrival << endl;
+			cout << "TOO LATE TO GET BACK TO DEPOT.." << endl;
+			return false;
+		}
+		if (set) {
+			visits.push_back(vis);
+		}
+		return true;
+	}
+	
+	// Early terminate pushforward if there's enough "slack"
+	for (int j = i_index + 1; j <= visits.size(); j++) {
+		if (pushForward <= 0) {
+			if (pushForward < 0) {
+				cout << "Something is wrong" << endl;
+			}
+			break;
+		}
 
-	if (set) curr.push_forward(arrival);
-
-	for (int i = i_index + 1; i <= visits.size(); i++) {
-		if (i == visits.size()) {
+		if (j == visits.size()) {
 			// final check from current node back to depot
 			int latestDepotArrival = input[0].end - input[0].unload;
 			travelTime = input.getDistance(0, curr.cust.id);
-			if (!(newDeparture + travelTime <= latestDepotArrival)) return false;
-		} else {
-			next = visits[i];
-			travelTime = input.getDistance(next.cust.id, curr.cust.id);
-			newArrival = newDeparture + travelTime;
-
-			if (!next.check_push_forward_feasiblity(newArrival)) {
+			if (!(curr.departure + pushForward + travelTime <= latestDepotArrival)) {
+				// cout << curr.cust.id << " " << travelTime << " " << pushForward << " " << latestDepotArrival << endl;
+				// cout << "TOO LATE TO GET BACK TO DEPOT" << endl;
 				return false;
 			}
-
-			newDeparture = next.get_push_forward_new_departure(newArrival);
-			if (set) next.push_forward(newArrival);
-
+		} else {
+			next = visits[j];
+			bool feasible = next.check_push_forward_feasiblity(pushForward);
+			if (!feasible) {
+				cout << "Checking PF resulted in failure" << endl;
+				return false;
+			}
+			nextPushForward = next.get_next_push_forward(pushForward);
+			if (set) next.push_forward(pushForward);
+			pushForward = nextPushForward;
 			curr = next;
 		}
 	}
@@ -70,4 +107,29 @@ bool route::check_push_forward(int i_index, const customer &u, const problem &in
 
 bool route::set_push_forward(int i_index, const customer &u, const problem &input) {
 	return push_forward_helper(i_index, u, input, true);
+}
+
+double route::get_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1) {
+	cout << "We here" << endl;
+
+	visit prev = visits[i_index];
+	visit next = visits[i_index + 1];
+	visit vis = initialise_insertion(i_index, u, input);
+	double d_iu = input.getDistance(prev.cust.id, u.id);
+	double d_uj = input.getDistance(u.id, next.cust.id);
+	double d_ij = input.getDistance(prev.cust.id, next.cust.id);
+	double c_11 = d_iu + d_uj - mu*d_ij;
+
+	int travelTime = input.getDistance(next.cust.id, vis.cust.id);
+	int newArrival = vis.departure + travelTime;
+	int b_j = fmax(next.arrival, next.cust.start);
+	int b_ju = fmax(newArrival, next.cust.start);
+	double c_12 = b_j - b_ju;
+
+	double alpha_2 = 1 - alpha_1;
+	double c_1 = alpha_1*c_11 + alpha_2*c_12;
+
+	double d_0u = input.getDistance(0, u.id);
+	double c_2 = lambda*d_0u - c_1;
+	return c_2;
 }
