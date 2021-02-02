@@ -33,8 +33,8 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 	route initialRoute;
 	customer depot = input[0];
 	visit depotStop = visit(depot, 0);
-
 	initialRoute.visits.push_back(depotStop);
+
 	initialRoute.capacity = input.getCapacity();
 
 	bool flip = false;
@@ -45,7 +45,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 	while (!unrouted.empty()) {
 		int bestUnroutedCustomer = 0;
 		double bestFitness = -1;
-		route *bestRoute;
+		route *bestRoute = &initialRoute;
 		int bestPositionOnRoute;
 
 		for (auto currCustomer: unrouted) {
@@ -62,11 +62,11 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 							bestUnroutedCustomer = currCustomer;
 						}
 					}
-					cout << "----------" << endl;
-					cout << (feasible ? "Feasible" : "Infeasible") << endl;
+					// cout << "----------" << endl;
+					// cout << (feasible ? "Feasible" : "Infeasible") << endl;
 					// route->print(stdout);
-					cout << "Prev : " << prev << " cid: " << currCustomer << " fitness: " << fitness << endl;
-					cout << "----------" << endl;
+					// cout << "Prev : " << prev << " cid: " << currCustomer << " fitness: " << fitness << endl;
+					// cout << "----------" << endl;
 				}
 			}
 		}
@@ -76,7 +76,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 			cout << "================================" << endl;
 			cout << "Conducting insertion" << endl;
 			cout << "Conducting insertion" << endl;
-			cout << "Best Unrouted: " << bestUnroutedCustomer << endl;
+			cout << "Best Unrouted: " << bestUnroutedCustomer << " pos: " << bestPositionOnRoute << endl;
 			cout << "Conducting insertion" << endl;
 			cout << "================================" << endl;
 			bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
@@ -91,9 +91,8 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 			cout << "NO FEASIBLE INSERTIONS" << endl;
 			cout << "NO FEASIBLE INSERTIONS" << endl;
 			cout << "================================" << endl;
+			
 			route newRoute;
-			customer depot = input[0];
-			visit depotStop = visit(depot, 0);
 			newRoute.visits.push_back(depotStop);
 			newRoute.capacity = input.getCapacity();
 			newRoutes.push_back(&newRoute);

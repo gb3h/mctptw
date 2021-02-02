@@ -57,10 +57,13 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 			return false;
 		}
 		if (set) {
+	cout << vis.cust.id << endl;
 			visits.push_back(vis);
+	cout << "problem?" << endl;
 		}
 		return true;
 	}
+
 	
 	// Early terminate pushforward if there's enough "slack"
 	for (int j = i_index + 1; j <= visits.size(); j++) {
@@ -110,10 +113,15 @@ bool route::set_push_forward(int i_index, const customer &u, const problem &inpu
 }
 
 double route::get_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1) {
-	cout << "We here" << endl;
-
 	visit prev = visits[i_index];
-	visit next = visits[i_index + 1];
+	visit next = visits[0];
+	if (i_index < visits.size() - 1) {
+		next = visits[i_index + 1];
+	} else {
+		next = visits[0];
+	}
+
+
 	visit vis = initialise_insertion(i_index, u, input);
 	double d_iu = input.getDistance(prev.cust.id, u.id);
 	double d_uj = input.getDistance(u.id, next.cust.id);
