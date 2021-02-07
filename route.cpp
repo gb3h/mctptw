@@ -57,9 +57,7 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 			return false;
 		}
 		if (set) {
-	cout << vis.cust.id << endl;
 			visits.push_back(vis);
-	cout << "problem?" << endl;
 		}
 		return true;
 	}
@@ -87,7 +85,6 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 			next = visits[j];
 			bool feasible = next.check_push_forward_feasiblity(pushForward);
 			if (!feasible) {
-				cout << "Checking PF resulted in failure" << endl;
 				return false;
 			}
 			nextPushForward = next.get_next_push_forward(pushForward);

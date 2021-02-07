@@ -37,8 +37,6 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 	initialRoute.capacity = input.getCapacity();
 
-	bool flip = false;
-
 	vector<route*> newRoutes;
 	newRoutes.push_back(&initialRoute);
 
@@ -51,9 +49,9 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 		for (auto currCustomer: unrouted) {
 			for (auto route: newRoutes) {
 				for (int prev = 0; prev < route->visits.size(); prev++) {
-					bool feasible = route->check_push_forward(prev, input[currCustomer], input);
+					bool isFeasible = route->check_push_forward(prev, input[currCustomer], input);
 					double fitness = -1;
-					if (feasible) {
+					if (isFeasible) {
 						fitness = route->get_fitness(prev, input[currCustomer], input, mu, lambda, alpha_1);
 						if ((bestFitness < 0) || (fitness > 0 && fitness < bestFitness)) {
 							bestFitness = fitness;
@@ -63,46 +61,36 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 						}
 					}
 					// cout << "----------" << endl;
-					// cout << (feasible ? "Feasible" : "Infeasible") << endl;
+					// cout << (isFeasible ? "Feasible" : "Infeasible") << endl;
 					// route->print(stdout);
 					// cout << "Prev : " << prev << " cid: " << currCustomer << " fitness: " << fitness << endl;
 					// cout << "----------" << endl;
 				}
 			}
 		}
-		// insert bestUnroutedCustomer in respective pos
 		if (bestFitness > 0) {
-			bestRoute->print(stdout);
-			cout << "================================" << endl;
-			cout << "Conducting insertion" << endl;
-			cout << "Conducting insertion" << endl;
-			cout << "Best Unrouted: " << bestUnroutedCustomer << " pos: " << bestPositionOnRoute << endl;
-			cout << "Conducting insertion" << endl;
-			cout << "================================" << endl;
+			// cout << "================================" << endl;
+			// cout << "Conducting insertion" << endl;
+			// cout << "Best unrouted customer: " << bestUnroutedCustomer << " pos: " << bestPositionOnRoute << " fitness: " << bestFitness << endl;
+			// cout << "================================" << endl;
 			bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
-			bestRoute->print(stdout);
+			// bestRoute->print(stdout);
 			unrouted.erase(bestUnroutedCustomer);
-			flip = true;
-		} else if (flip) {
-			flip = false;
-			cout << "================================" << endl;
-			cout << "NO FEASIBLE INSERTIONS" << endl;
-			cout << "NO FEASIBLE INSERTIONS" << endl;
-			cout << "NO FEASIBLE INSERTIONS" << endl;
-			cout << "NO FEASIBLE INSERTIONS" << endl;
-			cout << "================================" << endl;
+		} else {
+			// cout << "================================" << endl;
+			// cout << "NO FEASIBLE INSERTIONS" << endl;
+			// cout << "================================" << endl;
 			
-			route newRoute;
-			newRoute.visits.push_back(depotStop);
-			newRoute.capacity = input.getCapacity();
-			newRoutes.push_back(&newRoute);
-			for (auto route: newRoutes) {
-				route->print(stdout);
-			}
+			route* newRoute = new route();
+			newRoute->visits.push_back(depotStop);
+			newRoute->capacity = input.getCapacity();
+			newRoutes.push_back(newRoute);
 		}
-		// break;
 	}
 
+	for (auto route: newRoutes) {
+		routes.push_back(*route);
+	}
 }
 
 int solution::cmp(const solution &solA, const solution &solB, const problem &input){
