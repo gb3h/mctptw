@@ -91,9 +91,13 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 			nextPushForward = next.get_next_push_forward(pushForward);
 			if (set) {
 				next.push_forward(pushForward);
+				curr = next;
+			} else {
+				visit copy = visit(next);
+				copy.push_forward(pushForward);
+				curr = copy;
 			}
 			pushForward = nextPushForward;
-			curr = next;
 		}
 	}
 	if (set) {

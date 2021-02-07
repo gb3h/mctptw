@@ -44,7 +44,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 		int bestUnroutedCustomer = 0;
 		double bestFitness = -1;
 		route *bestRoute = &initialRoute;
-		int bestPositionOnRoute;
+		int bestPositionOnRoute = -1;
 
 		for (auto currCustomer: unrouted) {
 			for (auto route: newRoutes) {
@@ -64,7 +64,10 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 			}
 		}
 		if (bestFitness > 0) {
-			bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
+			bool success = bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
+			if (!success) {
+				cout << "FAILURE ================================" << endl;
+			}
 			unrouted.erase(bestUnroutedCustomer);
 		} else {
 			route* newRoute = new route();
