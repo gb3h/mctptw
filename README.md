@@ -1,11 +1,13 @@
 MCTPTW
 =====
 
-"Multi-vehicle Covering Tour Problem with Time Windows"
+Multi-vehicle Covering Tour Problem with Time Windows
 
 ## Problem Description
 
-A variant of the Vehicle Routing Problem with Time Windows (VRPTW) that splits vertices into the set V and W, where vertices in W are covered by 1 or more vertices in V. See the CTP original formulation by Gendreau et al. (1972).
+A variant of the Vehicle Routing Problem with Time Windows (VRPTW) that splits vertices into the sets V and W, where vertices in W are covered by one or more vertices in V. See the CTP original formulation by Gendreau et al. (1972).
+
+When every vertex in W is covered by exactly one vertix in V, we get a reduction to the problem of VRPTW.
 
 ## Benchmark Problem Sets (VRPTW)
 
