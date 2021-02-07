@@ -6,7 +6,7 @@
 using namespace std;
 
 void route::print(FILE *fp) const {
-	fprintf(fp, "%d customers, distance = %.3f :", visits.size() - 1, distance);
+	fprintf(fp, "%d customers, distance = %.3f, load = %d, capacity = %d:", visits.size() - 1, distance, load, capacity);
 	
 	for(auto visit: visits){
 		fprintf(fp, " %d", visit.cust.id);
@@ -29,6 +29,10 @@ visit route::initialise_insertion(int i_index, const customer &u, const problem 
 }
 
 bool route::push_forward_helper(int i_index, const customer &u, const problem &input, bool set) {
+	if (load + u.demand > capacity) {
+		return false;
+	}
+
 	visit vis = initialise_insertion(i_index, u, input);
 	if (!vis.feasible) {
 		return false;
@@ -47,22 +51,21 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 		oldStart = fmax(oldArrival, next.cust.start);
 		newStart = fmax(newArrival, next.cust.start);
 		pushForward = newStart - oldStart;
-		// cout << "INITIAL PUSH FORWARD: " << pushForward << endl;
 	} else {
 		int latestDepotArrival = input[0].end - input[0].unload;
 		travelTime = input.getDistance(0, curr.cust.id);
 		if (!(curr.departure + travelTime <= latestDepotArrival)) {
-			cout << curr.cust.id << " " << travelTime << " " << pushForward << " " << latestDepotArrival << endl;
-			cout << "TOO LATE TO GET BACK TO DEPOT.." << endl;
 			return false;
 		}
 		if (set) {
+			double minusTravelTime = input.getDistance(visits[i_index].cust.id, 0);
+			distance += travelTime + input.getDistance(visits[i_index].cust.id, curr.cust.id); - minusTravelTime;
 			visits.push_back(vis);
+			load += vis.cust.demand;
 		}
 		return true;
 	}
 
-	
 	// Early terminate pushforward if there's enough "slack"
 	for (int j = i_index + 1; j <= visits.size(); j++) {
 		if (pushForward <= 0) {
@@ -77,8 +80,6 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 			int latestDepotArrival = input[0].end - input[0].unload;
 			travelTime = input.getDistance(0, curr.cust.id);
 			if (!(curr.departure + pushForward + travelTime <= latestDepotArrival)) {
-				// cout << curr.cust.id << " " << travelTime << " " << pushForward << " " << latestDepotArrival << endl;
-				// cout << "TOO LATE TO GET BACK TO DEPOT" << endl;
 				return false;
 			}
 		} else {
@@ -88,15 +89,21 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 				return false;
 			}
 			nextPushForward = next.get_next_push_forward(pushForward);
-			if (set) next.push_forward(pushForward);
+			if (set) {
+				next.push_forward(pushForward);
+			}
 			pushForward = nextPushForward;
 			curr = next;
 		}
 	}
 	if (set) {
+		double minusTravelTime = input.getDistance(visits[i_index].cust.id, visits[i_index + 1].cust.id);
+		double travelTime = input.getDistance(visits[i_index].cust.id, u.id) + input.getDistance(visits[i_index + 1].cust.id, u.id);
 		vector<visit>::iterator it = visits.begin();
 		it += i_index + 1;
 		visits.insert(it, vis);
+		load += vis.cust.demand;
+		distance += travelTime - minusTravelTime;
 	}
 	return true;
 }

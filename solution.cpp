@@ -6,8 +6,8 @@
 using namespace std;
 
 void solution::print(FILE *fp) const {
-	fprintf(fp, "[%d routes, distance = %.3f, unbalance = %d, %s]\n",
-		routes.size(), totalDistance, unbalancedCapacity, (feasible) ? "feasible" : "infeasible");
+	fprintf(fp, "[%d routes, distance = %.3f]\n",
+		routes.size(), totalDistance);
 	
 	for(vector<route>::const_iterator it = routes.begin(); it != routes.end(); ++it){
 		it->print(fp);
@@ -30,7 +30,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 	set<int> unrouted;
 	for(int id = 1; id <= input.getNumCusto(); id++) unrouted.insert(id);
 
-	route initialRoute;
+	route initialRoute = *new route();
 	customer depot = input[0];
 	visit depotStop = visit(depot, 0);
 	initialRoute.visits.push_back(depotStop);
@@ -60,27 +60,13 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 							bestUnroutedCustomer = currCustomer;
 						}
 					}
-					// cout << "----------" << endl;
-					// cout << (isFeasible ? "Feasible" : "Infeasible") << endl;
-					// route->print(stdout);
-					// cout << "Prev : " << prev << " cid: " << currCustomer << " fitness: " << fitness << endl;
-					// cout << "----------" << endl;
 				}
 			}
 		}
 		if (bestFitness > 0) {
-			// cout << "================================" << endl;
-			// cout << "Conducting insertion" << endl;
-			// cout << "Best unrouted customer: " << bestUnroutedCustomer << " pos: " << bestPositionOnRoute << " fitness: " << bestFitness << endl;
-			// cout << "================================" << endl;
 			bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
-			// bestRoute->print(stdout);
 			unrouted.erase(bestUnroutedCustomer);
 		} else {
-			// cout << "================================" << endl;
-			// cout << "NO FEASIBLE INSERTIONS" << endl;
-			// cout << "================================" << endl;
-			
 			route* newRoute = new route();
 			newRoute->visits.push_back(depotStop);
 			newRoute->capacity = input.getCapacity();
@@ -90,6 +76,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 	for (auto route: newRoutes) {
 		routes.push_back(*route);
+		totalDistance += route->distance;
 	}
 }
 

@@ -11,8 +11,8 @@
 using namespace std;
 
 int main(int argc, char *argv[]){
-	// commands: MCTPTW.exe inputFileName
-	if(argc < 2){
+	// commands: ./MCTPTW.out inputFileName
+	if (argc < 2){
 		puts("Unknown commands.");
 		return 1;
 	}
@@ -20,14 +20,14 @@ int main(int argc, char *argv[]){
 	clock_t start = clock();
 
 	problem input;
-	if( !input.load(argv[1]) ){
+	if (!input.load(argv[1])){
 		puts("Unable to open input file!");
 		return 1;
 	}
 
-	solution solo;
-	solo.solomon(input);
-	solo.print(stdout);
+	solution solu;
+	solu.solomon(input);
+	solu.print(stdout);
 
 	clock_t end = clock();
 
