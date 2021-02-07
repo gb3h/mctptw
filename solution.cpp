@@ -79,7 +79,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 	for (auto route: newRoutes) {
 		routes.push_back(*route);
-		totalDistance += route->distance;
+		totalDistance += route->get_distance(input);
 	}
 }
 

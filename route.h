@@ -17,6 +17,7 @@ public:
 	bool check_push_forward(int i_index, const customer &u, const problem &input); // check feasibility of u in between i and i + 1 on route
 	bool set_push_forward(int i_index, const customer &u, const problem &input); // put u in between i and i + 1 on route
 	double get_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1);
+	double get_distance(const problem &input);
 
 	std::vector<visit> visits;
 	double distance, waiting;

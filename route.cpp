@@ -21,6 +21,15 @@ void route::clear(){
 	modified = true;
 }
 
+double route::get_distance(const problem &input) {
+	double dist = 0;
+	for (int i = 1; i < visits.size(); i++) {
+		dist += input.getDistance(visits[i - 1].cust.id, visits[i].cust.id);
+	}
+	dist += input.getDistance(visits[visits.size() - 1].cust.id, 0);
+	return dist;
+}
+
 visit route::initialise_insertion(int i_index, const customer &u, const problem &input) {
 	double travelTime = input.getDistance(visits[i_index].cust.id, u.id);
 	int arrival = visits[i_index].departure + travelTime;
