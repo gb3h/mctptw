@@ -6,10 +6,10 @@
 using namespace std;
 
 void route::print(FILE *fp) const {
-	fprintf(fp, "%d customers, distance = %.3f, load = %d, capacity = %d:", visits.size() - 1, distance, load, capacity);
+	fprintf(fp, "%d customers, distance = %.3f, load = %d, capacity = %d:", visits.size() - 2, distance, load, capacity);
 	
-	for(auto visit: visits){
-		fprintf(fp, " %d", visit.cust.id);
+	for(int i = 1; i < visits.size() - 1; i++){
+		fprintf(fp, " %d", visits[i].cust.id);
 	}
 
 	fprintf(fp, "\n");
@@ -52,31 +52,18 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 	int oldArrival, newArrival, pushForward, nextPushForward;
 	double travelTime;
 	int oldStart, newStart;
-	if (i_index + 1 < visits.size()) {
-		next = visits[i_index + 1];
-		travelTime = input.getDistance(next.cust.id, curr.cust.id);
-		oldArrival = next.arrival;
-		newArrival = curr.departure + travelTime;
-		oldStart = fmax(oldArrival, next.cust.start);
-		newStart = fmax(newArrival, next.cust.start);
-		pushForward = newStart - oldStart;
-	} else {
-		int latestDepotArrival = input[0].end - input[0].unload;
-		travelTime = input.getDistance(0, curr.cust.id);
-		if (!(curr.departure + travelTime <= latestDepotArrival)) {
-			return false;
-		}
-		if (set) {
-			double minusTravelTime = input.getDistance(visits[i_index].cust.id, 0);
-			distance += travelTime + input.getDistance(visits[i_index].cust.id, curr.cust.id); - minusTravelTime;
-			visits.push_back(vis);
-			load += vis.cust.demand;
-		}
-		return true;
-	}
+
+	// Do work to get the first PushForward value
+	next = visits[i_index + 1];
+	travelTime = input.getDistance(next.cust.id, curr.cust.id);
+	oldArrival = next.arrival;
+	newArrival = curr.departure + travelTime;
+	oldStart = fmax(oldArrival, next.cust.start);
+	newStart = fmax(newArrival, next.cust.start);
+	pushForward = newStart - oldStart;
 
 	// Early terminate pushforward if there's enough "slack"
-	for (int j = i_index + 1; j <= visits.size(); j++) {
+	for (int j = i_index + 1; j < visits.size(); j++) {
 		if (pushForward <= 0) {
 			if (pushForward < 0) {
 				cout << "Something is wrong" << endl;
@@ -84,31 +71,23 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 			break;
 		}
 
-		if (j == visits.size()) {
-			// final check from current node back to depot
-			int latestDepotArrival = input[0].end - input[0].unload;
-			travelTime = input.getDistance(0, curr.cust.id);
-			if (!(curr.departure + pushForward + travelTime <= latestDepotArrival)) {
-				return false;
-			}
-		} else {
-			next = visits[j];
-			bool feasible = next.check_push_forward_feasiblity(pushForward);
-			if (!feasible) {
-				return false;
-			}
-			nextPushForward = next.get_next_push_forward(pushForward);
-			if (set) {
-				next.push_forward(pushForward);
-				curr = next;
-			} else {
-				visit copy = visit(next);
-				copy.push_forward(pushForward);
-				curr = copy;
-			}
-			pushForward = nextPushForward;
+		next = visits[j];
+		bool feasible = next.check_push_forward_feasiblity(pushForward);
+		if (!feasible) {
+			return false;
 		}
+		nextPushForward = next.get_next_push_forward(pushForward);
+		if (set) {
+			next.push_forward(pushForward);
+			curr = next;
+		} else {
+			visit copy = visit(next);
+			copy.push_forward(pushForward);
+			curr = copy;
+		}
+		pushForward = nextPushForward;
 	}
+
 	if (set) {
 		double minusTravelTime = input.getDistance(visits[i_index].cust.id, visits[i_index + 1].cust.id);
 		double travelTime = input.getDistance(visits[i_index].cust.id, u.id) + input.getDistance(visits[i_index + 1].cust.id, u.id);
@@ -118,6 +97,7 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 		load += vis.cust.demand;
 		distance += travelTime - minusTravelTime;
 	}
+
 	return true;
 }
 
@@ -131,13 +111,7 @@ bool route::set_push_forward(int i_index, const customer &u, const problem &inpu
 
 double route::get_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1) {
 	visit prev = visits[i_index];
-	visit next = visits[0];
-	if (i_index < visits.size() - 1) {
-		next = visits[i_index + 1];
-	} else {
-		next = visits[0];
-	}
-
+	visit next = visits[i_index + 1];
 
 	visit vis = initialise_insertion(i_index, u, input);
 	double d_iu = input.getDistance(prev.cust.id, u.id);
@@ -157,4 +131,8 @@ double route::get_fitness(int i_index, const customer &u, const problem &input, 
 	double d_0u = input.getDistance(0, u.id);
 	double c_2 = lambda*d_0u - c_1;
 	return c_2;
+}
+
+bool route::check_feasibility(const problem &input) {
+	return false;
 }

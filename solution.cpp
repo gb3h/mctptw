@@ -34,6 +34,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 	customer depot = input[0];
 	visit depotStop = visit(depot, 0);
 	initialRoute.visits.push_back(depotStop);
+	initialRoute.visits.push_back(depotStop);
 
 	initialRoute.capacity = input.getCapacity();
 
@@ -48,7 +49,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 		for (auto currCustomer: unrouted) {
 			for (auto route: newRoutes) {
-				for (int prev = 0; prev < route->visits.size(); prev++) {
+				for (int prev = 0; prev < route->visits.size() - 1; prev++) {
 					bool isFeasible = route->check_push_forward(prev, input[currCustomer], input);
 					double fitness = -1;
 					if (isFeasible) {
@@ -72,6 +73,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 		} else {
 			route* newRoute = new route();
 			newRoute->visits.push_back(depotStop);
+			newRoute->visits.push_back(depotStop);
 			newRoute->capacity = input.getCapacity();
 			newRoutes.push_back(newRoute);
 		}
@@ -79,7 +81,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 	for (auto route: newRoutes) {
 		routes.push_back(*route);
-		totalDistance += route->get_distance(input);
+		totalDistance += route->distance;
 	}
 }
 
