@@ -136,7 +136,7 @@ bool route::check_feasibility(const problem &input) {
 
 		// Travel from prev to curr is correct
 		double d_iu = input.getDistance(prev.cust.id, curr.cust.id);
-		if (prev.departure + d_iu != curr.arrival) {
+		if (prev.departure + d_iu - curr.arrival > 0.001) {
 			cout << "Prev travel failure at index: " << i << endl;
 			print(stdout);
 			prev.print(stdout);

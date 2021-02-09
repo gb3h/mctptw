@@ -81,34 +81,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 	for (auto route: newRoutes) {
 		routes.push_back(*route);
+		route->check_feasibility(input);
 		totalDistance += route->distance;
 	}
-}
-
-int solution::cmp(const solution &solA, const solution &solB, const problem &input){
-	if(solA.feasible != solB.feasible){
-		if(solA.feasible) return -1;
-	}else if(solA.feasible){
-		if(solA.routes.size() != solB.routes.size() ) return (solA.routes.size() - solB.routes.size() );
-		else if(solA.totalDistance < solB.totalDistance) return -1;
-		else return 1;
-	}
-	return 1;
-}
-
-bool solution::fdominate(const solution &solA, const solution &solB){
-	if( solA.totalDistance <= solB.totalDistance && solA.routes.size() <= solB.routes.size() ){
-		return ( solA.totalDistance < solB.totalDistance || solA.routes.size() < solB.routes.size() );
-	}else return false;
-}
-
-bool solution::operator == (const solution &another) const {
-	return (routes.size() == another.routes.size() && 
-			unbalancedCapacity == another.unbalancedCapacity &&
-            abs(totalDistance - another.totalDistance) < 0.01);
-}
-
-bool solution::operator < (const solution &another) const {
-	if(routes.size() != another.routes.size() ) return (routes.size() < another.routes.size());
-	else return (totalDistance < another.totalDistance);
 }
