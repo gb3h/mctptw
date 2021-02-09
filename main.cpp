@@ -1,20 +1,22 @@
 #include <cstdio>
 #include <ctime>
-// #include <cmath>
-// #include <cstdlib>
-// #include <vector>
-// #include <list>
-// #include <algorithm>
 #include "solution.h"
 #include "problem.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]){
-	// commands: ./MCTPTW.out inputFileName
+	// commands: ./MCTPTW.out inputFileName optional: mu lambda alpha1
 	if (argc < 2){
 		puts("Unknown commands.");
 		return 1;
+	}
+
+	double mu = 1, lambda = 2, alpha1 = 0.5;
+	if (argc > 4) {
+		mu = strtod(argv[2], NULL);
+		lambda = strtod(argv[3], NULL);
+		alpha1 = strtod(argv[4], NULL);
 	}
 
 	clock_t start = clock();
@@ -26,7 +28,7 @@ int main(int argc, char *argv[]){
 	}
 
 	solution solu;
-	solu.solomon(input);
+	solu.solomon(input, mu, lambda, alpha1);
 	solu.print(stdout);
 
 	clock_t end = clock();

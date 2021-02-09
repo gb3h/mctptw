@@ -109,8 +109,8 @@ double route::get_fitness(int i_index, const customer &u, const problem &input, 
 	visit next = visits[i_index + 1];
 
 	visit vis = initialise_insertion(i_index, u, input);
-	double d_iu = input.getDistance(prev.cust.id, u.id);
-	double d_uj = input.getDistance(u.id, next.cust.id);
+	double d_iu = input.getDistance(prev.cust.id, vis.cust.id);
+	double d_uj = input.getDistance(vis.cust.id, next.cust.id);
 	double d_ij = input.getDistance(prev.cust.id, next.cust.id);
 	double c_11 = d_iu + d_uj - mu*d_ij;
 
@@ -123,7 +123,7 @@ double route::get_fitness(int i_index, const customer &u, const problem &input, 
 	double alpha_2 = 1 - alpha_1;
 	double c_1 = alpha_1*c_11 + alpha_2*c_12;
 
-	double d_0u = input.getDistance(0, u.id);
+	double d_0u = input.getDistance(0, vis.cust.id);
 	double c_2 = lambda*d_0u - c_1;
 	return c_2;
 }
