@@ -23,7 +23,6 @@ bool visit::check_push_forward_feasiblity(int pushForward) {
 int visit::push_forward(int pushForward) {
 	arrival = arrival + pushForward;
 	departure = fmax(arrival, cust.start) + cust.unload;
-	feasible = arrival <= cust.end;
 	int nextPushForward = get_next_push_forward(pushForward);
 	return nextPushForward;
 }

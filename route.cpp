@@ -58,16 +58,11 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 	travelTime = input.getDistance(next.cust.id, curr.cust.id);
 	oldArrival = next.arrival;
 	newArrival = curr.departure + travelTime;
-	oldStart = fmax(oldArrival, next.cust.start);
-	newStart = fmax(newArrival, next.cust.start);
-	pushForward = newStart - oldStart;
+	pushForward = newArrival - oldArrival;
 
-	// Early terminate pushforward if there's enough "slack"
 	for (int j = i_index + 1; j < visits.size(); j++) {
-		if (pushForward <= 0) {
-			if (pushForward < 0) {
-				cout << "Something is wrong" << endl;
-			}
+		// Early terminate PushForward loop if there's enough "slack"
+		if (pushForward == 0) {
 			break;
 		}
 
