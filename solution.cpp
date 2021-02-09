@@ -5,6 +5,8 @@
 
 using namespace std;
 
+
+
 void solution::print(FILE *fp) const {
 	fprintf(fp, "[%d routes, distance = %.3f]\n",
 		routes.size(), totalDistance);
@@ -43,9 +45,10 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 	while (!unrouted.empty()) {
 		int bestUnroutedCustomer = 0;
-		double bestFitness = -1;
+		double bestFitness = 0;
 		route *bestRoute = &initialRoute;
 		int bestPositionOnRoute = -1;
+		bool hasUpdated = false;
 
 		for (auto currCustomer: unrouted) {
 			for (auto route: newRoutes) {
@@ -54,7 +57,8 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 					double fitness = -1;
 					if (isFeasible) {
 						fitness = route->get_fitness(prev, input[currCustomer], input, mu, lambda, alpha_1);
-						if ((bestFitness < 0) || (fitness > 0 && fitness < bestFitness)) {
+						if ((hasUpdated == false) || (fitness < bestFitness)) {
+							hasUpdated = true;
 							bestFitness = fitness;
 							bestRoute = route;
 							bestPositionOnRoute = prev;
@@ -64,7 +68,7 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 				}
 			}
 		}
-		if (bestFitness > 0) {
+		if (hasUpdated) {
 			bool success = bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
 			if (!success) {
 				cout << "FAILURE ================================" << endl;
