@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <list>
 #include <vector>
+#include <cassert>
 #include "visit.h"
 #include "problem.h"
 

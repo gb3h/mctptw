@@ -6,7 +6,8 @@
 using namespace std;
 
 void route::print(FILE *fp) const {
-	fprintf(fp, "%d customers, distance = %.3f, load = %d, capacity = %d:", visits.size() - 2, distance, load, capacity);
+	fprintf(fp, "%d customers, distance = %.3f, load = %d, capacity = %d:", 
+		visits.size() - 2, distance, load, capacity);
 	
 	for(int i = 1; i < visits.size() - 1; i++){
 		fprintf(fp, " %d", visits[i].cust.id);
@@ -32,7 +33,7 @@ double route::get_distance(const problem &input) {
 
 visit route::initialise_insertion(int i_index, const customer &u, const problem &input) {
 	double travelTime = input.getDistance(visits[i_index].cust.id, u.id);
-	int arrival = visits[i_index].departure + travelTime;
+	double arrival = visits[i_index].departure + travelTime;
 	visit vis = visit(u, arrival);
 	return vis;
 }
@@ -47,18 +48,18 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 		return false;
 	}
 
-	visit curr = vis;
-	visit next = vis;
-	int oldArrival, newArrival, pushForward, nextPushForward;
+	visit* prev = &visits[i_index];
+	visit* curr = &vis;
+	visit* next = &visits[i_index + 1];
+	double oldArrival, newArrival, pushForward, nextPushForward;
 	double travelTime;
-	int oldStart, newStart;
+	double oldStart, newStart;
 
 	// Do work to get the first PushForward value
-	next = visits[i_index + 1];
-	travelTime = input.getDistance(next.cust.id, curr.cust.id);
-	oldArrival = next.arrival;
-	newArrival = curr.departure + travelTime;
-	pushForward = newArrival - oldArrival;
+	next = &visits[i_index + 1];
+	travelTime = input.getDistance(curr->cust.id, next->cust.id);
+	newArrival = curr->departure + travelTime;
+	pushForward = newArrival - next->arrival;
 
 	for (int j = i_index + 1; j < visits.size(); j++) {
 		// Early terminate PushForward loop if there's enough "slack"
@@ -66,19 +67,18 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 			break;
 		}
 
-		next = visits[j];
-		bool feasible = next.check_push_forward_feasiblity(pushForward);
-		if (!feasible) {
-			return false;
-		}
-		nextPushForward = next.get_next_push_forward(pushForward);
+		next = &visits[j];
+		if (!next->check_push_forward_feasiblity(pushForward)) return false;
+
+		nextPushForward = next->get_next_push_forward(pushForward);
+
 		if (set) {
-			next.push_forward(pushForward);
+			next->push_forward(pushForward);
 			curr = next;
 		} else {
-			visit copy = visit(next);
+			visit copy = *next;
 			copy.push_forward(pushForward);
-			curr = copy;
+			curr = &copy;
 		}
 		pushForward = nextPushForward;
 	}
@@ -129,5 +129,52 @@ double route::get_fitness(int i_index, const customer &u, const problem &input, 
 }
 
 bool route::check_feasibility(const problem &input) {
-	return false;
+	for (int i = 1; i < visits.size() - 1; i++) {
+		visit prev = visits[i - 1];
+		visit curr = visits[i];
+		visit next = visits[i + 1];
+
+		// Travel from prev to curr is correct
+		double d_iu = input.getDistance(prev.cust.id, curr.cust.id);
+		if (prev.departure + d_iu != curr.arrival) {
+			cout << "Prev travel failure at index: " << i << endl;
+			print(stdout);
+			prev.print(stdout);
+			cout << d_iu << endl;
+			curr.print(stdout);
+			cout << "================================" << endl;
+			return false;
+		}
+
+		// Curr arrives after end of time window
+		if (curr.arrival > curr.cust.end) {
+			cout << "Arrival failure at index: " << i << endl;
+			print(stdout);
+			curr.print(stdout);
+			cout << "================================" << endl;
+			return false;
+		}
+
+		// Curr departs once unloading is done
+		if (fmax(curr.arrival, curr.cust.start) + curr.cust.unload - curr.departure > 0.001) {
+			cout << "Departure failure at index: " << i << endl;
+			print(stdout);
+			curr.print(stdout);
+			cout << "================================" << endl;
+			return false;
+		}
+
+		// Travel to next is correct
+		double d_uj = input.getDistance(curr.cust.id, next.cust.id);
+		if (curr.departure + d_uj - next.arrival > 0.001) {
+			cout << "Next travel failure at index: " << i << endl;
+			print(stdout);
+			curr.print(stdout);
+			cout << d_uj << endl;
+			next.print(stdout);
+			cout << "================================" << endl;
+			return false;
+		}
+	}
+	return true;
 }

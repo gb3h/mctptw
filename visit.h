@@ -1,17 +1,19 @@
 #ifndef VISIT_H 
 #define VISIT_H 
+#include <cstdio>
 #include "customer.h"
 
 class visit{
 public:
-	visit(const customer &cust, int arrival);
+	void print(FILE *fp) const;
+	visit(const customer &cust, double arrival);
 
-	int get_next_push_forward(int pushForward); // return next PF 
-	bool check_push_forward_feasiblity(int pushForward); // return true if PF is still feasible for delivery
-	int push_forward(int pushForward); // updates current visit with PF and returns next PF
+	double get_next_push_forward(double pushForward); // return next PF 
+	bool check_push_forward_feasiblity(double pushForward); // return true if PF is still feasible for delivery
+	double push_forward(double pushForward); // updates current visit with PF and returns next PF
 
 	customer cust;
-	int arrival, departure;
+	double arrival, departure;
 	bool feasible;
 };
 
