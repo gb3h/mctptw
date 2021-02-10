@@ -129,10 +129,14 @@ double route::get_fitness(int i_index, const customer &u, const problem &input, 
 }
 
 bool route::check_feasibility(const problem &input) {
+	double newLoad = 0;
+
 	for (int i = 1; i < visits.size() - 1; i++) {
 		visit prev = visits[i - 1];
 		visit curr = visits[i];
 		visit next = visits[i + 1];
+
+		newLoad += curr.cust.demand;
 
 		// Travel from prev to curr is correct
 		double d_iu = input.getDistance(prev.cust.id, curr.cust.id);
@@ -168,5 +172,10 @@ bool route::check_feasibility(const problem &input) {
 			throw "Feasibility check failure: travel time is off!";
 		}
 	}
+
+	if (newLoad > capacity) {
+		throw "Feasibility check failure: exceeded capacity!";
+	}
+
 	return true;
 }
