@@ -68,9 +68,9 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 			}
 		}
 		if (hasUpdated) {
-			bool success = bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input);
-			if (!success) {
-				cout << "FAILURE ================================" << endl;
+			if (!bestRoute->set_push_forward(bestPositionOnRoute, input[bestUnroutedCustomer], input)) {
+				// Should return true after successful insertion
+				throw "Insertion failure";
 			}
 			unrouted.erase(bestUnroutedCustomer);
 		} else {

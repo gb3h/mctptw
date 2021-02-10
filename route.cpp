@@ -137,43 +137,35 @@ bool route::check_feasibility(const problem &input) {
 		// Travel from prev to curr is correct
 		double d_iu = input.getDistance(prev.cust.id, curr.cust.id);
 		if (prev.departure + d_iu - curr.arrival > 0.001) {
-			cout << "Prev travel failure at index: " << i << endl;
 			print(stdout);
 			prev.print(stdout);
 			cout << d_iu << endl;
 			curr.print(stdout);
-			cout << "================================" << endl;
-			return false;
+			throw "Feasibility check failure: travel time is off!";
 		}
 
 		// Curr arrives after end of time window
 		if (curr.arrival > curr.cust.end) {
-			cout << "Arrival failure at index: " << i << endl;
 			print(stdout);
 			curr.print(stdout);
-			cout << "================================" << endl;
-			return false;
+			throw "Feasibility check failure: arrival too late!";
 		}
 
 		// Curr departs once unloading is done
 		if (fmax(curr.arrival, curr.cust.start) + curr.cust.unload - curr.departure > 0.001) {
-			cout << "Departure failure at index: " << i << endl;
 			print(stdout);
 			curr.print(stdout);
-			cout << "================================" << endl;
-			return false;
+			throw "Feasibility check failure: unloading time is off!";
 		}
 
 		// Travel to next is correct
 		double d_uj = input.getDistance(curr.cust.id, next.cust.id);
 		if (curr.departure + d_uj - next.arrival > 0.001) {
-			cout << "Next travel failure at index: " << i << endl;
 			print(stdout);
 			curr.print(stdout);
 			cout << d_uj << endl;
 			next.print(stdout);
-			cout << "================================" << endl;
-			return false;
+			throw "Feasibility check failure: travel time is off!";
 		}
 	}
 	return true;
