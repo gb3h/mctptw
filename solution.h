@@ -13,7 +13,7 @@ public:
 	void print(FILE *fp) const;
 	void clear();
 	void random(const problem& input);
-	void solomon(const problem& input, double mu = 1, double lambda = 2, double alpha_1 = 0.5);
+	void solomon(const problem& input, int insertionCriteria = 1, double mu = 1, double lambda = 2, double alpha_1 = 0.5);
 
 	std::vector<route> routes;
 	double totalDistance, totalWaiting;

@@ -1,22 +1,26 @@
 #include <cstdio>
 #include <ctime>
+#include <iostream>
 #include "solution.h"
 #include "problem.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]){
-	// commands: ./MCTPTW.out inputFileName optional: mu lambda alpha1
+	// commands: ./MCTPTW.out inputFileName optional: insertionCriteria mu lambda alpha1
 	if (argc < 2){
 		puts("Unknown commands.");
 		return 1;
 	}
 
 	double mu = 1, lambda = 2, alpha1 = 0.5;
-	if (argc > 4) {
-		mu = strtod(argv[2], NULL);
-		lambda = strtod(argv[3], NULL);
-		alpha1 = strtod(argv[4], NULL);
+	int insertionCriteria = 0;
+	if (argc > 5) {
+		insertionCriteria = atoi(argv[2]);
+		mu = strtod(argv[3], NULL);
+		lambda = strtod(argv[4], NULL);
+		alpha1 = strtod(argv[5], NULL);
+		// printf("Insertion Criteria: %d, mu: %f, lambda: %f, alpha1: %f\n", insertionCriteria, mu, lambda, alpha1);
 	}
 
 	clock_t start = clock();
@@ -28,7 +32,7 @@ int main(int argc, char *argv[]){
 	}
 
 	solution solu;
-	solu.solomon(input, mu, lambda, alpha1);
+	solu.solomon(input, insertionCriteria, mu, lambda, alpha1);
 	solu.print(stdout);
 
 	clock_t end = clock();

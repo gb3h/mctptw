@@ -26,7 +26,7 @@ void solution::random(const problem& input){
 
 // Solomon's I1 insertion heuristic (1987)
 // Ref.: "Algorithms for the Vehicle Routing and Scheduling Problems with Time Window Constraints"
-void solution::solomon(const problem& input, double mu, double lambda, double alpha_1){
+void solution::solomon(const problem& input, int insertionCriteria, double mu, double lambda, double alpha_1){
 	clear();
 
 	set<int> unrouted;
@@ -79,6 +79,39 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 			newRoute->visits.push_back(depotStop);
 			newRoute->capacity = input.getCapacity();
 			newRoutes.push_back(newRoute);
+
+			int bestCustomer = -1;
+			double bestCustomerFitness = 0;
+			bool set = false;
+
+			if (insertionCriteria == 1) {
+				for (auto currCustomer: unrouted) {
+					// farthest customer
+					double currDist = input.getDistance(0, currCustomer);
+					if ((!set) || currDist > bestCustomerFitness) {
+						set = true;
+						bestCustomerFitness = currDist;
+						bestCustomer = currCustomer;
+					}
+				}
+			} else if (insertionCriteria == 2) {
+				for (auto currCustomer: unrouted) {
+					// purely b_ju - b_j
+					double currFitness = newRoute->get_fitness(0, input[currCustomer], input, 1, 0, 0);
+					if ((!set) || currFitness < bestCustomerFitness) {
+						set = true;
+						bestCustomerFitness = currFitness;
+						bestCustomer = currCustomer;
+					}
+				}
+			}
+
+			if (set) {
+				// cout << "Inserting customer: " << bestCustomer << " with fitness: " << bestCustomerFitness << endl;
+				vector<visit>::iterator it = newRoute->visits.begin();
+				newRoute->set_push_forward(0, input[bestCustomer], input);
+				unrouted.erase(bestCustomer);
+			}
 		}
 	}
 
