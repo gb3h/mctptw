@@ -54,9 +54,8 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 			for (auto route: newRoutes) {
 				for (int prev = 0; prev < route->visits.size() - 1; prev++) {
 					bool isFeasible = route->check_push_forward(prev, input[currCustomer], input);
-					double fitness = -1;
 					if (isFeasible) {
-						fitness = route->get_fitness(prev, input[currCustomer], input, mu, lambda, alpha_1);
+						double fitness = route->get_fitness(prev, input[currCustomer], input, mu, lambda, alpha_1);
 						if ((hasUpdated == false) || (fitness < bestFitness)) {
 							hasUpdated = true;
 							bestFitness = fitness;
