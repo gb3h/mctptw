@@ -33,6 +33,10 @@ int main(int argc, char *argv[]){
 
 	clock_t end = clock();
 
+	for (auto route: solu.routes) {
+		route.check_feasibility(input);
+	}
+
 	printf("%.3f second\n", ((double)(end)-start) / CLOCKS_PER_SEC);
 	return 0;
 }

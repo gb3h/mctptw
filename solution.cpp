@@ -85,7 +85,6 @@ void solution::solomon(const problem& input, double mu, double lambda, double al
 
 	for (auto route: newRoutes) {
 		routes.push_back(*route);
-		route->check_feasibility(input);
 		totalDistance += route->distance;
 	}
 }
