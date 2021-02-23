@@ -35,13 +35,13 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	solution solu;
-	solu.solomon(input, insertionCriteria, mu, lambda, alpha1);
-	solu.print(stdout);
+	solution *solu = new solution();
+	solu->solomon(input, insertionCriteria, mu, lambda, alpha1);
+	solu->print(stdout);
 
 	clock_t end = clock();
 
-	for (auto route : solu.routes)
+	for (auto route : solu->routes)
 	{
 		route.check_feasibility(input);
 	}
