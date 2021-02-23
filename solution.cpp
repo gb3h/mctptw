@@ -38,17 +38,13 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 	for (int id = 1; id <= input.getNumCusto(); id++)
 		unrouted.insert(id);
 
-	// Initialise start and end of route as depots
-	routes.emplace_back();
+	// Initialise first route with start and end of route as depots
 	routes.emplace_back();
 	customer depot = input[0];
 	visit depotStop = visit(depot, 0);
 	routes[0].visits.push_back(depotStop);
 	routes[0].visits.push_back(depotStop);
 	routes[0].capacity = input.getCapacity();
-	routes[1].visits.push_back(depotStop);
-	routes[1].visits.push_back(depotStop);
-	routes[1].capacity = input.getCapacity();
 
 	while (!unrouted.empty())
 	{
