@@ -8,12 +8,13 @@
 #include "route.h"
 #include "problem.h"
 
-class solution{
+class solution
+{
 public:
 	void print(FILE *fp) const;
 	void clear();
-	void random(const problem& input);
-	void solomon(const problem& input, int insertionCriteria = 1, double mu = 1, double lambda = 2, double alpha_1 = 0.5);
+	void random(const problem &input);
+	void solomon(const problem &input, int insertionCriteria = 1, double mu = 1, double lambda = 2, double alpha_1 = 0.5);
 
 	std::vector<route> routes;
 	double totalDistance, totalWaiting;

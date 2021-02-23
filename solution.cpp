@@ -38,22 +38,22 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 	for (int id = 1; id <= input.getNumCusto(); id++)
 		unrouted.insert(id);
 
-	route initialRoute = *new route();
+	route *initialRoute = new route();
 	customer depot = input[0];
 	visit depotStop = visit(depot, 0);
-	initialRoute.visits.push_back(depotStop);
-	initialRoute.visits.push_back(depotStop);
+	initialRoute->visits.push_back(depotStop);
+	initialRoute->visits.push_back(depotStop);
 
-	initialRoute.capacity = input.getCapacity();
+	initialRoute->capacity = input.getCapacity();
 
 	vector<route *> newRoutes;
-	newRoutes.push_back(&initialRoute);
+	newRoutes.push_back(initialRoute);
 
 	while (!unrouted.empty())
 	{
 		int bestUnroutedCustomer = 0;
 		double bestFitness = 0;
-		route *bestRoute = &initialRoute;
+		route *bestRoute = initialRoute;
 		int bestPositionOnRoute = -1;
 		bool hasUpdated = false;
 
