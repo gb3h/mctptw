@@ -7,10 +7,10 @@ using namespace std;
 
 void solution::print(FILE *fp) const
 {
-	fprintf(fp, "%d routes\n%.3f distance\n",
+	fprintf(fp, "%ld routes\n%.3f distance\n",
 			routes.size(), totalDistance);
 
-	// fprintf(fp, "[%d routes, distance = %.3f]\n",
+	// fprintf(fp, "[%ld routes, distance = %.3f]\n",
 	// 		routes.size(), totalDistance);
 
 	// for(vector<route>::const_iterator it = routes.begin(); it != routes.end(); ++it){
