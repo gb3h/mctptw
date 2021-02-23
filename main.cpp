@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
 		route.check_feasibility(input);
 	}
 
+	solu.clear();
+
 	printf("%.3f second\n", ((double)(end)-start) / CLOCKS_PER_SEC);
 	return 0;
 }
