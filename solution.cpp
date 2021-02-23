@@ -38,7 +38,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 	for (int id = 1; id <= input.getNumCusto(); id++)
 		unrouted.insert(id);
 
-	route initialRoute;
+	route initialRoute = *new route();
 	customer depot = input[0];
 	visit depotStop = visit(depot, 0);
 	initialRoute.visits.push_back(depotStop);
