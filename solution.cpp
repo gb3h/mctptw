@@ -24,10 +24,6 @@ void solution::clear()
 	totalDistance = totalWaiting = unbalancedCapacity = exceededCapacity = 0;
 }
 
-void solution::random(const problem &input)
-{
-}
-
 // Solomon's I1 insertion heuristic (1987)
 // Ref.: "Algorithms for the Vehicle Routing and Scheduling Problems with Time Window Constraints"
 void solution::solomon(const problem &input, int insertionCriteria, double mu, double lambda, double alpha_1)
