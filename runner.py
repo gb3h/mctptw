@@ -37,11 +37,17 @@ for name in parameters:
 row_format = "{:<17}" + "{:<16}" + "{:>12}" * (len(params_str))
 print(row_format.format("", "Best", *params_str))
 
-regex = re.compile('(0025|0050)+')
+regex = re.compile('(0025)+')
 command = [f'./mctptw.out']
+files = []
 for filename in os.listdir('solomon_problems'):
     if not re.match(regex, filename):
         continue
+    files.append(filename)
+files.sort()
+for filename in files:
+    # if not re.match(regex, filename):
+    # continue
     input_file_string = f'solomon_problems/{filename}'
     output_list = []
     best = None
@@ -62,7 +68,7 @@ for filename in os.listdir('solomon_problems'):
             best_dist = distance
             best_n = num_routes
         if num_routes == best_n:
-            if distance < best_dist:
+            if distance <= best_dist:
                 best = param_str
                 best_dist = distance
                 best_n = num_routes
