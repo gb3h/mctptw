@@ -35,8 +35,8 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 	clear();
 
 	set<int> unrouted;
-	for (int id = 1; id <= input.getNumCusto(); id++)
-		unrouted.insert(id);
+	for (int id = 1; id <= input.getNumCustomer(); id++)
+		unrouted.insert(input.getNumParking() + id);
 
 	// Initialise first route with start and end of route as depots
 	routes.emplace_back();
