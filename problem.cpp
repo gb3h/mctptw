@@ -52,6 +52,8 @@ bool problem::load(const char *filename)
 
 	calDistances();
 
+	calCovering();
+
 	double avgCusPerVehicle = capacity / (totalDemand / numCustomer);
 	shortHorizon = (calMinRoute() > avgCusPerVehicle);
 
@@ -76,6 +78,11 @@ int problem::getNumParking() const
 double problem::getDistance(int id1, int id2) const
 {
 	return distance[id1][id2];
+}
+
+const std::vector<int> &problem::getCovering(int id) const
+{
+	return covering.at(id);
 }
 
 const customer &problem::operator[](int id) const
@@ -113,6 +120,22 @@ void problem::calDistances()
 			double ans = hypot(allCustomer[x].x_pos - allCustomer[y].x_pos,
 							   allCustomer[x].y_pos - allCustomer[y].y_pos);
 			distance[x][y] = distance[y][x] = ans;
+		}
+	}
+}
+
+void problem::calCovering()
+{
+	for (unsigned int i = 1; i <= numCustomer; i++)
+	{
+		covering.insert(std::make_pair(i + numParking, std::vector<int>()));
+		for (unsigned int j = 1; j <= numParking; j++)
+		{
+			if (distance[i + numParking][j] > maxCoverDist)
+			{
+				continue;
+			}
+			covering[i + numParking].push_back(j);
 		}
 	}
 }
