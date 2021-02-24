@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
-#include <numeric>
 #include "solution.h"
 
 using namespace std;
@@ -150,75 +149,64 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 
 void solution::brute_force(const problem &input)
 {
-	generate_partitions(4);
-	// std::vector<std::vector<int>> set_of_sets = generate_partitions(5);
-	cout << partitions.size() << endl;
-	for (int i = 0; i < partitions.size(); i++)
-	{
-		for (int j = 0; j < partitions[i].size(); j++)
-		{
-			cout << partitions[i][j] << " ";
-		}
-		cout << endl;
-	}
-
-	std::vector<int> arr = {3, 4, 5, 6};
-	perm_generator(arr, 2);
+	clear();
+	set<int> unrouted;
+	for (int id = 1; id <= input.getNumCustomer(); id++)
+		unrouted.insert(input.getNumParking() + id);
+	vector<int> arr(unrouted);
+	vector<vector<int>> partitions = generate_partitions(5);
+	vector<vector<int>> perms = perm_generator(arr, 2);
 }
 
-void solution::perm_generator(std::vector<int> &arr, int k)
+vector<vector<int>> solution::perm_generator(vector<int> &arr, int k)
 {
-	cout << "These are the Possible Permutations: " << endl;
+	vector<vector<int>> perms;
 	do
 	{
+		vector<int> curr;
 		for (int i = 0; i < k; i++)
 		{
-			cout << arr[i] << " ";
+			curr.push_back(arr[i]);
 		}
-		cout << endl;
-		std::reverse(arr.begin() + k, arr.end());
+		perms.push_back(curr);
+		reverse(arr.begin() + k, arr.end());
 	} while (next_permutation(arr.begin(), arr.end()));
+	return perms;
 }
 
-void solution::generate_partitions(int n)
+vector<vector<int>> solution::generate_partitions(int n)
 {
-	std::vector<int> p(n);
+	vector<int> p(1);
 	int k = 0;
 	p[k] = n;
-
-	// Loop until all the array elements converted to 1 mean no further partition can be generated.
+	vector<vector<int>> partitions;
 	while (1)
 	{
-		std::vector<int> curr(p);
+		vector<int> curr(p);
 		partitions.push_back(curr);
-		// printArray(p, k + 1);
 		int rem_val = 0;
-
-		// Move the pointer to the index so that p[k] > 1.
 		while (k >= 0 && p[k] == 1)
 		{
 			rem_val += p[k];
 			k--;
 		}
-		// If k < 0 then the all the element are broken down to 1.
 		if (k < 0)
-			return;
-
-		// If value greater than 1 is found then decrease it by 1 and increase rem_val to add it to other elements.
+			return partitions;
 		p[k]--;
 		rem_val++;
-
-		// Loop until the number of 1's are greater than the value at k index.
 		while (rem_val > p[k])
 		{
+			if ((k + 1) >= p.size())
+				p.push_back(0);
 			p[k + 1] = p[k];
-			// Decrease the rem_val value.
 			rem_val = rem_val - p[k];
 			k++;
 		}
 
-		// Assign the remaining value to the index next to k.
+		if ((k + 1) >= p.size())
+			p.push_back(0);
 		p[k + 1] = rem_val;
 		k++;
 	}
+	return partitions;
 }

@@ -11,9 +11,8 @@
 class solution
 {
 private:
-	void generate_partitions(int n);
-	void perm_generator(std::vector<int> &arr, int k);
-	std::vector<std::vector<int>> partitions;
+	std::vector<std::vector<int>> generate_partitions(int n);
+	std::vector<std::vector<int>> perm_generator(std::vector<int> &arr, int k);
 
 public:
 	void print(FILE *fp) const;
