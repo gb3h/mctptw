@@ -34,13 +34,8 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 	for (int id = 1; id <= input.getNumCusto(); id++)
 		unrouted.insert(id);
 
-	// Initialise first route with start and end of route as depots
-	routes.emplace_back();
 	customer depot = input[0];
 	visit depotStop = visit(depot, 0);
-	routes[0].visits.push_back(depotStop);
-	routes[0].visits.push_back(depotStop);
-	routes[0].capacity = input.getCapacity();
 
 	while (!unrouted.empty())
 	{
@@ -52,23 +47,39 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 
 		for (auto currCustomer : unrouted)
 		{
-			for (int i = 0; i < routes.size(); i++)
+			double currBestFitness = 0;
+			int currBestPositionOnRoute = -1;
+			bool currHasUpdated = false;
+
+			int i = routes.size() - 1;
+			if (i < 0)
+				break;
+
+			for (int prev = 0; prev < routes[i].visits.size() - 1; prev++)
 			{
-				for (int prev = 0; prev < routes[i].visits.size() - 1; prev++)
+				bool isFeasible = routes[i].check_push_forward(prev, input[currCustomer], input);
+				if (isFeasible)
 				{
-					bool isFeasible = routes[i].check_push_forward(prev, input[currCustomer], input);
-					if (isFeasible)
+					double c1_fitness = routes[i].get_c1_fitness(prev, input[currCustomer], input, mu, lambda, alpha_1);
+					if ((currHasUpdated == false) || (c1_fitness < currBestFitness))
 					{
-						double fitness = routes[i].get_fitness(prev, input[currCustomer], input, mu, lambda, alpha_1);
-						if ((hasUpdated == false) || (fitness < bestFitness))
-						{
-							hasUpdated = true;
-							bestFitness = fitness;
-							bestRoute = &routes[i];
-							bestPositionOnRoute = prev;
-							bestUnroutedCustomer = currCustomer;
-						}
+						currHasUpdated = true;
+						currBestFitness = c1_fitness;
+						currBestPositionOnRoute = prev;
 					}
+				}
+			}
+
+			if (currHasUpdated)
+			{
+				double c2_fitness = routes[i].get_c2_fitness(currBestPositionOnRoute, input[currCustomer], input, mu, lambda, alpha_1);
+				if ((hasUpdated == false) || (c2_fitness > bestFitness))
+				{
+					hasUpdated = true;
+					bestFitness = c2_fitness;
+					bestRoute = &routes[i];
+					bestPositionOnRoute = currBestPositionOnRoute;
+					bestUnroutedCustomer = currCustomer;
 				}
 			}
 		}
@@ -111,7 +122,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 				for (auto currCustomer : unrouted)
 				{
 					// purely b_ju - b_j
-					double currFitness = routes[routes.size() - 1].get_fitness(0, input[currCustomer], input, 1, 0, 0);
+					double currFitness = routes[routes.size() - 1].get_c1_fitness(0, input[currCustomer], input, 1, 0, 0);
 					if ((!set) || currFitness < bestCustomerFitness)
 					{
 						set = true;

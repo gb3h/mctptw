@@ -122,7 +122,7 @@ bool route::set_push_forward(int i_index, const customer &u, const problem &inpu
 	return push_forward_helper(i_index, u, input, true);
 }
 
-double route::get_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
+double route::get_c1_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
 {
 	visit prev = visits[i_index];
 	visit next = visits[i_index + 1];
@@ -137,12 +137,17 @@ double route::get_fitness(int i_index, const customer &u, const problem &input, 
 	int newArrival = vis.departure + travelTime;
 	int b_j = fmax(next.arrival, next.cust.start);
 	int b_ju = fmax(newArrival, next.cust.start);
-	double c_12 = b_j - b_ju;
+	double c_12 = b_ju - b_j;
 
 	double alpha_2 = 1 - alpha_1;
 	double c_1 = alpha_1 * c_11 + alpha_2 * c_12;
+	return c_1;
+}
 
-	double d_0u = input.getDistance(0, vis.cust.id);
+double route::get_c2_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
+{
+	double c_1 = route::get_c1_fitness(i_index, u, input, mu, lambda, alpha_1);
+	double d_0u = input.getDistance(0, u.id);
 	double c_2 = lambda * d_0u - c_1;
 	return c_2;
 }

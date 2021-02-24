@@ -68,7 +68,7 @@ for filename in files:
             best_dist = distance
             best_n = num_routes
         if num_routes == best_n:
-            if distance <= best_dist:
+            if distance < best_dist:
                 best = param_str
                 best_dist = distance
                 best_n = num_routes
