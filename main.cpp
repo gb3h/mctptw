@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
 	}
 
 	solution solu;
-	solu.solomon(input, insertionCriteria, mu, lambda, alpha1);
+	// solu.solomon(input, insertionCriteria, mu, lambda, alpha1);
+	solu.brute_force(input);
 	solu.print(stdout);
 
 	clock_t end = clock();
