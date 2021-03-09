@@ -2,6 +2,32 @@
 #include <cmath>
 #include "problem.h"
 
+void problem::printCovering(FILE *fp) const
+{
+	for (unsigned int i = 1; i <= numCustomer; i++)
+	{
+		fprintf(fp, "Customer %d covered by parking spots:", i + numParking);
+		for (unsigned int j = 0; j < covering[i].size(); j++)
+		{
+			fprintf(fp, " %d", covering[i][j]);
+		}
+		fprintf(fp, "\n");
+	}
+}
+
+void problem::printCoverage(FILE *fp) const
+{
+	for (unsigned int i = 1; i <= numParking; i++)
+	{
+		fprintf(fp, "Parking spot %d covers cusomers:", i);
+		for (unsigned int j = 0; j < covering[i].size(); j++)
+		{
+			fprintf(fp, " %d", coverage[i][j]);
+		}
+		fprintf(fp, "\n");
+	}
+}
+
 bool problem::load(const char *filename)
 {
 	FILE *fp = fopen(filename, "r");
@@ -82,7 +108,12 @@ double problem::getDistance(int id1, int id2) const
 
 const std::vector<int> &problem::getCovering(int id) const
 {
-	return covering.at(id);
+	return covering[id - numParking];
+}
+
+const std::vector<int> &problem::getCoverage(int id) const
+{
+	return coverage[id];
 }
 
 const customer &problem::operator[](int id) const
@@ -126,16 +157,18 @@ void problem::calDistances()
 
 void problem::calCovering()
 {
+	covering.resize(numCustomer + 1);
+	coverage.resize(numParking + 1);
 	for (unsigned int i = 1; i <= numCustomer; i++)
 	{
-		covering.insert(std::make_pair(i + numParking, std::vector<int>()));
 		for (unsigned int j = 1; j <= numParking; j++)
 		{
 			if (distance[i + numParking][j] > maxCoverDist)
 			{
 				continue;
 			}
-			covering[i + numParking].push_back(j);
+			covering[i].push_back(j);
+			coverage[j].push_back(i + numParking);
 		}
 	}
 }

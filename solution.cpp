@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
+#include <queue>
 #include "solution.h"
 
 using namespace std;
@@ -150,12 +151,40 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 void solution::brute_force(const problem &input)
 {
 	clear();
+
+	customer depot = input[0];
+	visit depotStop = visit(depot, 0);
+
 	set<int> unrouted;
+	vector<int> arr;
 	for (int id = 1; id <= input.getNumCustomer(); id++)
+	{
+		arr.push_back(input.getNumParking() + id);
 		unrouted.insert(input.getNumParking() + id);
-	vector<int> arr(unrouted);
-	vector<vector<int>> partitions = generate_partitions(5);
+	}
+	vector<vector<int>> partitions = generate_partitions(4);
+	vector<int> first_route;
+	queue<pair<vector<int>, pair<vector<int>, vector<int>>>> q;
+	for (auto partition : partitions)
+	{
+		pair<vector<int>, pair<vector<int>, vector<int>>> node = make_pair(first_route, make_pair(partition, arr));
+		q.push(node);
+	}
+
+	while (!q.empty())
+	{
+	}
+
 	vector<vector<int>> perms = perm_generator(arr, 2);
+	// cout << perms.size() << endl;
+	// for (int i = 0; i < perms.size(); i++)
+	// {
+	// 	for (int j = 0; j < perms[i].size(); j++)
+	// 	{
+	// 		cout << perms[i][j] << " ";
+	// 	}
+	// 	cout << endl;
+	// }
 }
 
 vector<vector<int>> solution::perm_generator(vector<int> &arr, int k)
