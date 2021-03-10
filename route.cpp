@@ -36,23 +36,49 @@ double route::get_distance(const problem &input)
 	return dist;
 }
 
-visit route::initialise_insertion(int i_index, const customer &u, const problem &input)
+visit route::initialise_insertion(int i_index, const customer &park, const customer &u, const problem &input)
 {
-	double travelTime = input.getDistance(visits[i_index].cust.id, u.id);
-	double arrival = visits[i_index].departure + travelTime;
-	visit vis = visit(u, arrival);
+	// Previous delivery's parking is the same as this
+	visit vis = visit(park, u, visits[i_index].arrival, input.getDistance(park.id, u.id), visits[i_index].departure);
+
+	// Previous delivery's parking is elsewhere
+	if (visits[i_index].park.id != park.id)
+	{
+		double travelTime = input.getDistance(visits[i_index].park.id, park.id);
+		double arrival = visits[i_index].departure + travelTime;
+		vis = visit(park, u, arrival, input.getDistance(park.id, u.id), 0);
+	}
 	return vis;
 }
 
-bool route::push_forward_helper(int i_index, const customer &u, const problem &input, bool set)
+double route::compute_new_leave(int index, int park_id, double arrivalPushForward)
+{
+	double ans = -1;
+	for (int i = index; i < visits.size(); i++)
+	{
+		visit next = visits[i];
+		if (next.park.id != park_id)
+		{
+			break;
+		}
+		if (!next.check_push_forward_feasiblity(arrivalPushForward))
+			return -1;
+
+		next.push_forward(arrivalPushForward);
+		ans = fmax(ans, next.getEarliestDeparture());
+	}
+	return ans;
+}
+
+bool route::push_forward_helper(int i_index, const customer &park, const customer &u, const problem &input, bool set)
 {
 	if (load + u.demand > capacity)
 	{
 		return false;
 	}
 
-	visit vis = initialise_insertion(i_index, u, input);
-	if (!vis.feasible)
+	visit vis = initialise_insertion(i_index, park, u, input);
+	if (!vis.feasible())
 	{
 		return false;
 	}
@@ -60,15 +86,16 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 	visit *prev = &visits[i_index];
 	visit *curr = &vis;
 	visit *next = &visits[i_index + 1];
-	double oldArrival, newArrival, pushForward, nextPushForward;
+	double newArrival, newLeave;
 	double travelTime;
-	double oldStart, newStart;
 
 	// Do work to get the first PushForward value
 	next = &visits[i_index + 1];
-	travelTime = input.getDistance(curr->cust.id, next->cust.id);
-	newArrival = curr->departure + travelTime;
-	pushForward = newArrival - next->arrival;
+
+	// In the case that we are delivering at the same parking spot as the next
+	double pushForward = 0;
+	newLeave = curr->getEarliestDeparture();
+	pushForward = newLeave - curr->departure;
 
 	for (int j = i_index + 1; j < visits.size(); j++)
 	{
@@ -79,55 +106,60 @@ bool route::push_forward_helper(int i_index, const customer &u, const problem &i
 		}
 
 		next = &visits[j];
-		if (!next->check_push_forward_feasiblity(pushForward))
-			return false;
 
-		nextPushForward = next->get_next_push_forward(pushForward);
-
-		if (set)
+		if (next->park.id == curr->park.id)
 		{
-			next->push_forward(pushForward);
-			curr = next;
+			if (set)
+			{
+				next->departure += pushForward;
+			}
 		}
 		else
 		{
-			visit copy = *next;
-			copy.push_forward(pushForward);
-			curr = &copy;
+			if (!next->check_push_forward_feasiblity(pushForward))
+				return false;
+			if (!set)
+			{
+				visit copy = *next;
+				next = &copy;
+			}
+			next->push_forward(pushForward);
+			double nextPushForward = compute_new_leave(j + 1, next->park.id, pushForward);
+			newLeave = fmax(next->getEarliestDeparture(), nextPushForward);
+			next->departure = newLeave;
+			pushForward = newLeave;
 		}
-		pushForward = nextPushForward;
 	}
 
 	if (set)
 	{
-		double minusTravelTime = input.getDistance(visits[i_index].cust.id, visits[i_index + 1].cust.id);
-		double travelTime = input.getDistance(visits[i_index].cust.id, u.id) + input.getDistance(visits[i_index + 1].cust.id, u.id);
+		double minusTravelTime = input.getDistance(visits[i_index].park.id, visits[i_index + 1].park.id);
+		double travelTime = input.getDistance(visits[i_index].park.id, park.id) + input.getDistance(visits[i_index + 1].park.id, park.id);
 		vector<visit>::iterator it = visits.begin();
 		it += i_index + 1;
 		visits.insert(it, vis);
 		load += vis.cust.demand;
 		distance += travelTime - minusTravelTime;
 	}
-
 	return true;
 }
 
-bool route::check_push_forward(int i_index, const customer &u, const problem &input)
+bool route::check_push_forward(int i_index, const customer &park, const customer &u, const problem &input)
 {
-	return push_forward_helper(i_index, u, input, false);
+	return push_forward_helper(i_index, park, u, input, false);
 }
 
-bool route::set_push_forward(int i_index, const customer &u, const problem &input)
+bool route::set_push_forward(int i_index, const customer &park, const customer &u, const problem &input)
 {
-	return push_forward_helper(i_index, u, input, true);
+	return push_forward_helper(i_index, park, u, input, true);
 }
 
-double route::get_c1_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
+double route::get_c1_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
 {
 	visit prev = visits[i_index];
 	visit next = visits[i_index + 1];
 
-	visit vis = initialise_insertion(i_index, u, input);
+	visit vis = initialise_insertion(i_index, park, u, input);
 	double d_iu = input.getDistance(prev.cust.id, vis.cust.id);
 	double d_uj = input.getDistance(vis.cust.id, next.cust.id);
 	double d_ij = input.getDistance(prev.cust.id, next.cust.id);
@@ -144,9 +176,9 @@ double route::get_c1_fitness(int i_index, const customer &u, const problem &inpu
 	return c_1;
 }
 
-double route::get_c2_fitness(int i_index, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
+double route::get_c2_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
 {
-	double c_1 = route::get_c1_fitness(i_index, u, input, mu, lambda, alpha_1);
+	double c_1 = route::get_c1_fitness(i_index, park, u, input, mu, lambda, alpha_1);
 	double d_0u = input.getDistance(0, u.id);
 	double c_2 = lambda * d_0u - c_1;
 	return c_2;

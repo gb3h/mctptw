@@ -1,34 +1,67 @@
 #include <cmath>
 #include "visit.h"
-#include<iostream>
+#include <iostream>
 
 using namespace std;
 
-visit::visit(const customer &cust, double arrival) :
-	cust(cust), arrival(arrival), departure(fmax(arrival, cust.start) + cust.unload), feasible(arrival <= cust.end) {
+visit::visit(const customer &park, const customer &cust, double arrival, double distance, double departure) : park(park), cust(cust), arrival(arrival), distance(distance), departure(departure)
+{
 }
 
-void visit::print(FILE *fp) const {
-	fprintf(fp, "Cust id: %d, arrival = %.2f, departure = %.2f, start = %d, end = %d, unload = %d\n", 
-		cust.id, arrival, departure, cust.start, cust.end, cust.unload);
+void visit::print(FILE *fp) const
+{
+	fprintf(fp, "Park id: %d, Cust id: %d, arrival = %.2f, departure = %.2f, start = %d, end = %d, unload = %d\n",
+			park.id, cust.id, arrival, departure, cust.start, cust.end, cust.unload);
 }
 
-double visit::get_next_push_forward(double pushForward) {
+double visit::get_next_push_forward(double pushForward)
+{
 	double newArrival = arrival + pushForward;
 	double oldStart = fmax(arrival, cust.start);
 	double newStart = fmax(newArrival, cust.start);
 	return newStart - oldStart; // should always be >= 0. if 0, no need to propagate.
 }
 
-bool visit::check_push_forward_feasiblity(double pushForward) {
+bool visit::check_push_forward_feasiblity(double pushForward)
+{
 	double newArrival = arrival + pushForward;
-	double newStart = fmax(newArrival, cust.start);
-	return newStart <= cust.end;
+	double serviceTime = getEffectiveServiceTime();
+	double earliestStartTime = getEarliestStart();
+	double serviceStart = fmax(newArrival, earliestStartTime);
+	double newDepart = serviceStart + serviceTime;
+	return newDepart <= getLatestEnd();
 }
 
-double visit::push_forward(double pushForward) {
+double visit::push_forward(double pushForward)
+{
 	arrival = arrival + pushForward;
-	departure = fmax(arrival, cust.start) + cust.unload;
-	double nextPushForward = get_next_push_forward(pushForward);
-	return nextPushForward;
+	return 1;
+}
+
+double visit::getEarliestStart()
+{
+	return cust.start - distance;
+}
+
+double visit::getLatestEnd()
+{
+	return cust.end + distance;
+}
+
+double visit::getEffectiveServiceTime()
+{
+	return cust.unload + 2 * distance;
+}
+
+double visit::getEarliestDeparture()
+{
+	double serviceTime = getEffectiveServiceTime();
+	double earliestStartTime = getEarliestStart();
+	double serviceStart = fmax(arrival, earliestStartTime);
+	return serviceStart + serviceTime;
+}
+
+bool visit::feasible()
+{
+	return getEarliestDeparture() <= getLatestEnd();
 }
