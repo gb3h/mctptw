@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 
 	for (auto route : solu.routes)
 	{
+		route.print(stdout);
 		route.check_feasibility(input);
 	}
 

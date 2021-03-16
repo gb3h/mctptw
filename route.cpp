@@ -51,6 +51,91 @@ visit route::initialise_insertion(int i_index, const customer &park, const custo
 	return vis;
 }
 
+bool route::push_forward_helper(int i_index, const customer &park, const customer &u, const problem &input, bool set)
+{
+	if (load + u.demand > capacity)
+	{
+		return false;
+	}
+
+	visit vis = initialise_insertion(i_index, park, u, input);
+
+	if (!vis.feasible())
+	{
+		return false;
+	}
+
+	visit *curr = &vis;
+	visit *next;
+
+	double newLeave, oldLeave;
+	bool updateLeave = false;
+
+	double newArrival, oldArrival, travelTime;
+	double pushForward = 0;
+
+	for (int j = i_index + 1; j < visits.size(); j++)
+	{
+		next = &visits[j];
+		if (!set)
+		{
+			// Make a copy and dont do any mutation if set == false
+			visit copy = *next;
+			next = &copy;
+		}
+
+		if (curr->park.id != next->park.id)
+		{
+			travelTime = input.getDistance(curr->park.id, next->park.id);
+			newArrival = travelTime + curr->departure;
+			oldArrival = next->arrival;
+			pushForward = fmax(0, newArrival - oldArrival);
+		}
+
+		if (!next->check_push_forward_feasiblity(pushForward))
+		{
+			return false;
+		}
+
+		oldLeave = next->departure;
+		next->push_forward(pushForward);
+		newLeave = (curr->park.id == next->park.id) ? fmax(curr->departure, next->departure) : next->departure;
+		next->departure = newLeave;
+		updateLeave = (newLeave > oldLeave);
+
+		// Early terminate PushForward loop if there's enough "slack"
+		if (pushForward == 0 && updateLeave == false)
+		{
+			break;
+		}
+
+		curr = next;
+	}
+
+	if (set)
+	{
+		double minusTravelTime = input.getDistance(visits[i_index].park.id, visits[i_index + 1].park.id);
+		double travelTime = input.getDistance(visits[i_index].park.id, park.id) + input.getDistance(visits[i_index + 1].park.id, park.id);
+		vector<visit>::iterator it = visits.begin();
+		it += i_index + 1;
+		visits.insert(it, vis);
+		load += vis.cust.demand;
+		distance += travelTime - minusTravelTime;
+		botDistance += 2 * vis.distance;
+	}
+	return true;
+}
+
+bool route::check_push_forward(int i_index, const customer &park, const customer &u, const problem &input)
+{
+	return push_forward_helper(i_index, park, u, input, false);
+}
+
+bool route::set_push_forward(int i_index, const customer &park, const customer &u, const problem &input)
+{
+	return push_forward_helper(i_index, park, u, input, true);
+}
+
 double route::compute_new_leave(int index, int park_id, double arrivalPushForward)
 {
 	double ans = -1;
@@ -70,110 +155,23 @@ double route::compute_new_leave(int index, int park_id, double arrivalPushForwar
 	return ans;
 }
 
-bool route::push_forward_helper(int i_index, const customer &park, const customer &u, const problem &input, bool set)
-{
-	if (load + u.demand > capacity)
-	{
-		return false;
-	}
-
-	visit vis = initialise_insertion(i_index, park, u, input);
-	if (!vis.feasible())
-	{
-		return false;
-	}
-
-	visit *prev = &visits[i_index];
-	visit *curr = &vis;
-	visit *next = &visits[i_index + 1];
-	double newArrival, newLeave;
-	double travelTime;
-
-	// Do work to get the first PushForward value
-	next = &visits[i_index + 1];
-
-	// In the case that we are delivering at the same parking spot as the next
-	double pushForward = 0;
-	newLeave = curr->getEarliestDeparture();
-	pushForward = newLeave - curr->departure;
-
-	for (int j = i_index + 1; j < visits.size(); j++)
-	{
-		// Early terminate PushForward loop if there's enough "slack"
-		if (pushForward == 0)
-		{
-			break;
-		}
-
-		next = &visits[j];
-
-		if (next->park.id == curr->park.id)
-		{
-			if (set)
-			{
-				next->departure += pushForward;
-			}
-		}
-		else
-		{
-			if (!next->check_push_forward_feasiblity(pushForward))
-				return false;
-			if (!set)
-			{
-				visit copy = *next;
-				next = &copy;
-			}
-			next->push_forward(pushForward);
-			double nextPushForward = compute_new_leave(j + 1, next->park.id, pushForward);
-			newLeave = fmax(next->getEarliestDeparture(), nextPushForward);
-			next->departure = newLeave;
-			pushForward = newLeave;
-		}
-	}
-
-	if (set)
-	{
-		double minusTravelTime = input.getDistance(visits[i_index].park.id, visits[i_index + 1].park.id);
-		double travelTime = input.getDistance(visits[i_index].park.id, park.id) + input.getDistance(visits[i_index + 1].park.id, park.id);
-		vector<visit>::iterator it = visits.begin();
-		it += i_index + 1;
-		visits.insert(it, vis);
-		load += vis.cust.demand;
-		distance += travelTime - minusTravelTime;
-	}
-	return true;
-}
-
-bool route::check_push_forward(int i_index, const customer &park, const customer &u, const problem &input)
-{
-	return push_forward_helper(i_index, park, u, input, false);
-}
-
-bool route::set_push_forward(int i_index, const customer &park, const customer &u, const problem &input)
-{
-	return push_forward_helper(i_index, park, u, input, true);
-}
-
 double route::get_c1_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
 {
 	visit prev = visits[i_index];
 	visit next = visits[i_index + 1];
 
 	visit vis = initialise_insertion(i_index, park, u, input);
-	double d_iu = input.getDistance(prev.cust.id, vis.cust.id);
-	double d_uj = input.getDistance(vis.cust.id, next.cust.id);
-	double d_ij = input.getDistance(prev.cust.id, next.cust.id);
-	double c_11 = d_iu + d_uj - mu * d_ij;
+	double travelTime = input.getDistance(next.cust.id, vis.cust.id);
+	double oldArrival = next.arrival;
+	double newArrival = vis.departure + travelTime;
+	double oldLeave = next.departure;
+	next.push_forward(newArrival - oldArrival);
+	double newLeave = next.departure;
+	double c_12 = newLeave - oldLeave;
 
-	int travelTime = input.getDistance(next.cust.id, vis.cust.id);
-	int newArrival = vis.departure + travelTime;
-	int b_j = fmax(next.arrival, next.cust.start);
-	int b_ju = fmax(newArrival, next.cust.start);
-	double c_12 = b_ju - b_j;
-
-	double alpha_2 = 1 - alpha_1;
-	double c_1 = alpha_1 * c_11 + alpha_2 * c_12;
-	return c_1;
+	// double alpha_2 = 1 - alpha_1;
+	// double c_1 = alpha_1 * c_11 + alpha_2 * c_12;
+	return c_12;
 }
 
 double route::get_c2_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
@@ -197,41 +195,59 @@ bool route::check_feasibility(const problem &input)
 		newLoad += curr.cust.demand;
 
 		// Travel from prev to curr is correct
-		double d_iu = input.getDistance(prev.cust.id, curr.cust.id);
-		if (prev.departure + d_iu - curr.arrival > 0.001)
+		if (prev.park.id != curr.park.id)
 		{
-			print(stdout);
-			prev.print(stdout);
-			cout << d_iu << endl;
-			curr.print(stdout);
-			throw "Feasibility check failure: travel time is off!";
+			double d_iu = input.getDistance(prev.park.id, curr.park.id);
+			if (prev.departure + d_iu - curr.arrival > 0.001)
+			{
+				print(stdout);
+				prev.print(stdout);
+				cout << d_iu << endl;
+				curr.print(stdout);
+				throw "Feasibility check failure: travel time is off!";
+			}
+		}
+		else
+		{
+			if (prev.arrival != curr.arrival)
+			{
+				print(stdout);
+				prev.print(stdout);
+				curr.print(stdout);
+				throw "Feasibility check failure: adjacent parking visitations have different arrival!";
+			}
 		}
 
-		// Curr arrives after end of time window
-		if (curr.arrival > curr.cust.end)
+		// Curr arrives too late
+		if (!curr.feasible())
 		{
 			print(stdout);
 			curr.print(stdout);
 			throw "Feasibility check failure: arrival too late!";
 		}
 
-		// Curr departs once unloading is done
-		if (fmax(curr.arrival, curr.cust.start) + curr.cust.unload - curr.departure > 0.001)
-		{
-			print(stdout);
-			curr.print(stdout);
-			throw "Feasibility check failure: unloading time is off!";
-		}
-
 		// Travel to next is correct
-		double d_uj = input.getDistance(curr.cust.id, next.cust.id);
-		if (curr.departure + d_uj - next.arrival > 0.001)
+		if (curr.park.id != next.park.id)
 		{
-			print(stdout);
-			curr.print(stdout);
-			cout << d_uj << endl;
-			next.print(stdout);
-			throw "Feasibility check failure: travel time is off!";
+			double d_uj = input.getDistance(curr.park.id, next.park.id);
+			if (curr.departure + d_uj - next.arrival > 0.001)
+			{
+				print(stdout);
+				curr.print(stdout);
+				cout << d_uj << endl;
+				next.print(stdout);
+				throw "Feasibility check failure: travel time is off!";
+			}
+		}
+		else
+		{
+			if (curr.arrival != next.arrival)
+			{
+				print(stdout);
+				curr.print(stdout);
+				next.print(stdout);
+				throw "Feasibility check failure: adjacent parking visitations have different arrival!";
+			}
 		}
 	}
 

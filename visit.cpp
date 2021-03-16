@@ -4,7 +4,7 @@
 
 using namespace std;
 
-visit::visit(const customer &park, const customer &cust, double arrival, double distance, double departure) : park(park), cust(cust), arrival(arrival), distance(distance), departure(departure)
+visit::visit(const customer &park, const customer &cust, double arrival, double distance, double departure) : park(park), cust(cust), arrival(arrival), distance(distance), departure(fmax(departure, getEarliestDeparture()))
 {
 }
 
@@ -35,6 +35,7 @@ bool visit::check_push_forward_feasiblity(double pushForward)
 double visit::push_forward(double pushForward)
 {
 	arrival = arrival + pushForward;
+	departure = fmax(departure, getEarliestDeparture());
 	return 1;
 }
 
@@ -63,5 +64,5 @@ double visit::getEarliestDeparture()
 
 bool visit::feasible()
 {
-	return getEarliestDeparture() <= getLatestEnd();
+	return getEarliestDeparture() > getLatestEnd();
 }

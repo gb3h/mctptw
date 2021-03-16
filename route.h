@@ -27,6 +27,7 @@ public:
 
 	std::vector<visit> visits;
 	double distance, waiting;
+	double botDistance;
 	int load, capacity;
 	bool feasible, modified;
 };

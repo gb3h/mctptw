@@ -8,8 +8,8 @@ using namespace std;
 
 void solution::print(FILE *fp) const
 {
-	fprintf(fp, "%ld routes\n%.3f distance\n",
-			routes.size(), totalDistance);
+	fprintf(fp, "%ld routes\n%.3f distance\n%.3f bot distance\n",
+			routes.size(), totalDistance, totalBotDistance);
 
 	// fprintf(fp, "[%ld routes, distance = %.3f]\n",
 	// 		routes.size(), totalDistance);
@@ -22,7 +22,7 @@ void solution::print(FILE *fp) const
 void solution::clear()
 {
 	routes.clear();
-	totalDistance = totalWaiting = unbalancedCapacity = exceededCapacity = 0;
+	totalDistance = totalWaiting = unbalancedCapacity = exceededCapacity = totalBotDistance = 0;
 }
 
 // Solomon's I1 insertion heuristic (1987)
@@ -114,6 +114,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 	for (auto route : routes)
 	{
 		totalDistance += route.distance;
+		totalBotDistance += route.botDistance;
 	}
 }
 

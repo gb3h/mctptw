@@ -22,6 +22,7 @@ public:
 
 	std::vector<route> routes;
 	double totalDistance, totalWaiting;
+	double totalBotDistance;
 	int unbalancedCapacity, exceededCapacity;
 	bool feasible;
 };
