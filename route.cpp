@@ -12,7 +12,7 @@ void route::print(FILE *fp) const
 
 	for (int i = 1; i < visits.size() - 1; i++)
 	{
-		fprintf(fp, " (%d, %d)", visits[i].park.id, visits[i].cust.id);
+		fprintf(fp, " (%d, %d)", visits[i].park.id, visits[i].cust.id - 25);
 	}
 
 	fprintf(fp, "\n");
@@ -177,7 +177,7 @@ double route::get_c1_fitness(int i_index, const customer &park, const customer &
 double route::get_c2_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
 {
 	double c_1 = route::get_c1_fitness(i_index, park, u, input, mu, lambda, alpha_1);
-	double d_0u = input.getDistance(0, u.id);
+	double d_0u = input.getDistance(0, park.id);
 	double c_2 = lambda * d_0u - c_1;
 	return c_2;
 }

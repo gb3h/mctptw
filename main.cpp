@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	double mu = 1, lambda = 2, alpha1 = 0.5;
+	double mu = 1, lambda = 1, alpha1 = 0;
 	int insertionCriteria = 0;
 	if (argc > 5)
 	{
