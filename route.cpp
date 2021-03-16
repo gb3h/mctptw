@@ -12,7 +12,7 @@ void route::print(FILE *fp) const
 
 	for (int i = 1; i < visits.size() - 1; i++)
 	{
-		fprintf(fp, " %d", visits[i].cust.id);
+		fprintf(fp, " (%d, %d)", visits[i].park.id, visits[i].cust.id);
 	}
 
 	fprintf(fp, "\n");
