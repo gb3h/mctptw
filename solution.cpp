@@ -68,6 +68,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 					if (isFeasible)
 					{
 						double c1_fitness = routes[i].get_c1_fitness(prev, input[covering[j]], input[currCustomer], input, mu, lambda, alpha_1);
+						fprintf(stdout, "(%d, %d) route: %d, fitness: %.3f\n", covering[j], currCustomer - 25, i, c1_fitness);
 						if ((currHasUpdated == false) || (c1_fitness < currBestFitness))
 						{
 							currHasUpdated = true;
@@ -100,6 +101,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 				// Should return true after successful insertion
 				throw "Insertion failure";
 			}
+			bestRoute->print(stdout);
 			unrouted.erase(bestUnroutedCustomer);
 		}
 		else
