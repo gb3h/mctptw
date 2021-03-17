@@ -68,7 +68,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 					if (isFeasible)
 					{
 						double c1_fitness = routes[i].get_c1_fitness(prev, input[covering[j]], input[currCustomer], input, mu, lambda, alpha_1);
-						fprintf(stdout, "(%d, %d) route: %d, fitness: %.3f\n", covering[j], currCustomer - 25, i, c1_fitness);
+						fprintf(stdout, "(%d, %d) route: %d, c1 fitness: %.3f\n", covering[j], currCustomer - 25, i, c1_fitness);
 						if ((currHasUpdated == false) || (c1_fitness < currBestFitness))
 						{
 							currHasUpdated = true;
@@ -83,6 +83,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 			if (currHasUpdated)
 			{
 				double c2_fitness = routes[i].get_c2_fitness(currBestPositionOnRoute, input[currParking], input[currCustomer], input, mu, lambda, alpha_1);
+				fprintf(stdout, "(%d, %d) route: %d, c2 fitness: %.3f\n", currParking, currCustomer - 25, i, c2_fitness);
 				if ((hasUpdated == false) || (c2_fitness > bestFitness))
 				{
 					hasUpdated = true;
