@@ -29,7 +29,7 @@ bool visit::check_push_forward_feasiblity(double pushForward)
 	double earliestStartTime = getEarliestStart();
 	double serviceStart = fmax(newArrival, earliestStartTime);
 	double newDepart = serviceStart + serviceTime;
-	return newDepart <= getLatestEnd();
+	return serviceStart <= getLatestEnd();
 }
 
 double visit::push_forward(double pushForward)
@@ -64,5 +64,8 @@ double visit::getEarliestDeparture()
 
 bool visit::feasible()
 {
-	return getEarliestDeparture() > getLatestEnd();
+	double earliestStartTime = getEarliestStart();
+	double serviceStart = fmax(arrival, earliestStartTime);
+	return serviceStart <= getLatestEnd();
+	// return getEarliestDeparture() > getLatestEnd();
 }

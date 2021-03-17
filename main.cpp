@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 		mu = strtod(argv[3], NULL);
 		lambda = strtod(argv[4], NULL);
 		alpha1 = strtod(argv[5], NULL);
-		// printf("Insertion Criteria: %d, mu: %f, lambda: %f, alpha1: %f\n", insertionCriteria, mu, lambda, alpha1);
 	}
 
 	clock_t start = clock();
@@ -37,7 +36,6 @@ int main(int argc, char *argv[])
 
 	solution solu;
 	solu.solomon(input, insertionCriteria, mu, lambda, alpha1);
-	// solu.brute_force(input);
 	solu.print(stdout);
 
 	clock_t end = clock();
