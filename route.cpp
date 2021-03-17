@@ -136,25 +136,6 @@ bool route::set_push_forward(int i_index, const customer &park, const customer &
 	return push_forward_helper(i_index, park, u, input, true);
 }
 
-double route::compute_new_leave(int index, int park_id, double arrivalPushForward)
-{
-	double ans = -1;
-	for (int i = index; i < visits.size(); i++)
-	{
-		visit next = visits[i];
-		if (next.park.id != park_id)
-		{
-			break;
-		}
-		if (!next.check_push_forward_feasiblity(arrivalPushForward))
-			return -1;
-
-		next.push_forward(arrivalPushForward);
-		ans = fmax(ans, next.getEarliestDeparture());
-	}
-	return ans;
-}
-
 double route::get_c1_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
 {
 	visit prev = visits[i_index];

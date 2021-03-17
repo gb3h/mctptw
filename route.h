@@ -13,7 +13,6 @@ class route
 private:
 	visit initialise_insertion(int i_index, const customer &park, const customer &u, const problem &input);
 	bool push_forward_helper(int i_index, const customer &park, const customer &u, const problem &input, bool set);
-	double compute_new_leave(int index, int park_id, double arrivalPushForward);
 
 public:
 	void print(FILE *fp) const;
