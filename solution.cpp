@@ -10,6 +10,13 @@ void solution::print(FILE *fp) const
 {
 	fprintf(fp, "%ld routes\n%.3f distance\n%.3f bot distance\n",
 			routes.size(), totalDistance, totalBotDistance);
+
+	// fprintf(fp, "[%ld routes, distance = %.3f]\n",
+	// 		routes.size(), totalDistance);
+
+	// for(vector<route>::const_iterator it = routes.begin(); it != routes.end(); ++it){
+	// 	it->print(fp);
+	// }
 }
 
 void solution::clear()
@@ -18,6 +25,8 @@ void solution::clear()
 	totalDistance = totalWaiting = unbalancedCapacity = exceededCapacity = totalBotDistance = 0;
 }
 
+// Solomon's I1 insertion heuristic (1987)
+// Ref.: "Algorithms for the Vehicle Routing and Scheduling Problems with Time Window Constraints"
 void solution::solomon(const problem &input, int insertionCriteria, double mu, double lambda, double alpha_1)
 {
 	clear();
@@ -59,6 +68,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 					if (isFeasible)
 					{
 						double c1_fitness = routes[i].get_c1_fitness(prev, input[covering[j]], input[currCustomer], input, mu, lambda, alpha_1);
+						fprintf(stdout, "(%d, %d) route: %d, fitness: %.3f\n", covering[j], currCustomer - 25, i, c1_fitness);
 						if ((currHasUpdated == false) || (c1_fitness < currBestFitness))
 						{
 							currHasUpdated = true;
@@ -91,6 +101,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 				// Should return true after successful insertion
 				throw "Insertion failure";
 			}
+			bestRoute->print(stdout);
 			unrouted.erase(bestUnroutedCustomer);
 		}
 		else

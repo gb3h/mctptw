@@ -25,11 +25,7 @@ double visit::get_next_push_forward(double pushForward)
 bool visit::check_push_forward_feasiblity(double pushForward)
 {
 	double newArrival = arrival + pushForward;
-	double serviceTime = getEffectiveServiceTime();
-	double earliestStartTime = getEarliestStart();
-	double serviceStart = fmax(newArrival, earliestStartTime);
-	double newDepart = serviceStart + serviceTime;
-	return serviceStart <= getLatestEnd();
+	return newArrival + distance <= cust.end;
 }
 
 double visit::push_forward(double pushForward)
@@ -44,14 +40,14 @@ double visit::getEarliestStart()
 	return cust.start - distance;
 }
 
-double visit::getLatestEnd()
-{
-	return cust.end + distance;
-}
-
 double visit::getEffectiveServiceTime()
 {
-	return cust.unload + 2 * distance;
+	return cust.unload + (2 * distance);
+}
+
+double visit::getLatestEnd()
+{
+	return cust.end + getEffectiveServiceTime() + distance;
 }
 
 double visit::getEarliestDeparture()
@@ -64,8 +60,5 @@ double visit::getEarliestDeparture()
 
 bool visit::feasible()
 {
-	double earliestStartTime = getEarliestStart();
-	double serviceStart = fmax(arrival, earliestStartTime);
-	return serviceStart <= getLatestEnd();
-	// return getEarliestDeparture() > getLatestEnd();
+	return arrival + distance <= cust.end;
 }
