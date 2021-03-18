@@ -12,7 +12,7 @@ void route::print(FILE *fp) const
 
 	for (int i = 1; i < visits.size() - 1; i++)
 	{
-		fprintf(fp, " (%d, %d)", visits[i].park.id, visits[i].cust.id - 25);
+		fprintf(fp, " (%d, %d)", visits[i].park.id, visits[i].cust.id);
 	}
 
 	fprintf(fp, "\n");
@@ -30,7 +30,7 @@ double route::get_distance(const problem &input)
 	double dist = 0;
 	for (int i = 1; i < visits.size(); i++)
 	{
-		dist += input.getDistance(visits[i - 1].cust.id, visits[i].cust.id);
+		dist += input.getDistance(visits[i - 1].cust.id, visits[i].cust.id - input.getNumParking());
 	}
 	dist += input.getDistance(visits[visits.size() - 1].cust.id, 0);
 	return dist;
@@ -79,6 +79,7 @@ bool route::push_forward_helper(int i_index, const customer &park, const custome
 	for (int j = i_index + 1; j < visits.size(); j++)
 	{
 		next = &visits[j];
+		// printf("Curr: %d, next: %d\n", curr->cust.id, next->cust.id);
 		if (curr->park.id != next->park.id)
 		{
 			travelTime = input.getDistance(curr->park.id, next->park.id);

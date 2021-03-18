@@ -20,7 +20,7 @@ void problem::printCoverage(FILE *fp) const
 	for (unsigned int i = 1; i <= numParking; i++)
 	{
 		fprintf(fp, "Parking spot %d covers cusomers:", i);
-		for (unsigned int j = 0; j < covering[i].size(); j++)
+		for (unsigned int j = 0; j < coverage[i].size(); j++)
 		{
 			fprintf(fp, " %d", coverage[i][j]);
 		}
@@ -132,7 +132,7 @@ int problem::calMinRoute() const
 
 double hypot(double x, double y)
 {
-	return sqrt(x * x + y * y);
+	return sqrt((x * x) + (y * y));
 }
 
 void problem::calDistances()

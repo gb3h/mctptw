@@ -95,6 +95,8 @@ void solution::solomon(const problem &input, double lambda, double alpha_1)
 		}
 		if (hasUpdated)
 		{
+			// printf("BestPos: %d, (%d, %d)\n", bestPositionOnRoute, bestParking, bestUnroutedCustomer);
+			// bestRoute->check_push_forward(bestPositionOnRoute, input[bestParking], input[bestUnroutedCustomer], input);
 			if (!bestRoute->set_push_forward(bestPositionOnRoute, input[bestParking], input[bestUnroutedCustomer], input))
 			{
 				// Should return true after successful insertion
