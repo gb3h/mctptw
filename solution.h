@@ -17,7 +17,7 @@ private:
 public:
 	void print(FILE *fp) const;
 	void clear();
-	void solomon(const problem &input, int insertionCriteria, double mu, double lambda, double alpha_1);
+	void solomon(const problem &input, double lambda, double alpha_1);
 	void brute_force(const problem &input);
 
 	std::vector<route> routes;

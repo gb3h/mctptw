@@ -15,14 +15,11 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	double mu = 1, lambda = 1, alpha1 = 0;
-	int insertionCriteria = 0;
-	if (argc > 5)
+	double lambda = 1, alpha1 = 0;
+	if (argc > 3)
 	{
-		insertionCriteria = atoi(argv[2]);
-		mu = strtod(argv[3], NULL);
-		lambda = strtod(argv[4], NULL);
-		alpha1 = strtod(argv[5], NULL);
+		lambda = strtod(argv[2], NULL);
+		alpha1 = strtod(argv[3], NULL);
 	}
 
 	clock_t start = clock();
@@ -35,7 +32,7 @@ int main(int argc, char *argv[])
 	}
 
 	solution solu;
-	solu.solomon(input, insertionCriteria, mu, lambda, alpha1);
+	solu.solomon(input, lambda, alpha1);
 	solu.print(stdout);
 
 	clock_t end = clock();

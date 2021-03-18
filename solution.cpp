@@ -25,9 +25,7 @@ void solution::clear()
 	totalDistance = totalWaiting = unbalancedCapacity = exceededCapacity = totalBotDistance = 0;
 }
 
-// Solomon's I1 insertion heuristic (1987)
-// Ref.: "Algorithms for the Vehicle Routing and Scheduling Problems with Time Window Constraints"
-void solution::solomon(const problem &input, int insertionCriteria, double mu, double lambda, double alpha_1)
+void solution::solomon(const problem &input, double lambda, double alpha_1)
 {
 	clear();
 
@@ -67,7 +65,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 					bool isFeasible = routes[i].check_push_forward(prev, input[covering[j]], input[currCustomer], input);
 					if (isFeasible)
 					{
-						double c1_fitness = routes[i].get_c1_fitness(prev, input[covering[j]], input[currCustomer], input, mu, lambda, alpha_1);
+						double c1_fitness = routes[i].get_c1_fitness(prev, input[covering[j]], input[currCustomer], input, alpha_1, unrouted);
 						// fprintf(stdout, "(%d, %d) route: %d, c1 fitness: %.3f\n", covering[j], currCustomer - 25, i, c1_fitness);
 						if ((currHasUpdated == false) || (c1_fitness < currBestFitness))
 						{
@@ -82,7 +80,7 @@ void solution::solomon(const problem &input, int insertionCriteria, double mu, d
 
 			if (currHasUpdated)
 			{
-				double c2_fitness = routes[i].get_c2_fitness(currBestPositionOnRoute, input[currParking], input[currCustomer], input, mu, lambda, alpha_1);
+				double c2_fitness = routes[i].get_c2_fitness(currBestPositionOnRoute, input[currParking], input[currCustomer], input, lambda, currBestFitness);
 				// fprintf(stdout, "(%d, %d) route: %d, c2 fitness: %.3f\n", currParking, currCustomer - 25, i, c2_fitness);
 				if ((hasUpdated == false) || (c2_fitness > bestFitness))
 				{

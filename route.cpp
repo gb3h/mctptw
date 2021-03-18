@@ -140,12 +140,26 @@ bool route::set_push_forward(int i_index, const customer &park, const customer &
 	return push_forward_helper(i_index, park, u, input, true);
 }
 
-double route::get_c1_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
+double route::get_c1_fitness(int i_index, const customer &park, const customer &u, const problem &input, double alpha_1, set<int> unrouted)
 {
 	visit prev = visits[i_index];
 	visit next = visits[i_index + 1];
-
 	visit vis = initialise_insertion(i_index, park, u, input);
+
+	vector<int> coverage = input.getCoverage(park.id);
+	double c_11 = 0;
+	for (int i = 0; i < coverage.size(); i++)
+	{
+		customer k = input[coverage[i]];
+		if (!unrouted.count(k.id) || k.id == u.id)
+		{
+			continue;
+		}
+		double d_pk = input.getDistance(park.id, k.id);
+		double curr = fmin(k.end + d_pk, vis.getEarliestDeparture()) - fmax(fmax(k.start - d_pk, 0), vis.arrival);
+		c_11 += curr;
+	}
+
 	double travelTime = input.getDistance(next.park.id, vis.park.id);
 	double oldArrival = next.arrival;
 	double newArrival = vis.departure + travelTime;
@@ -153,15 +167,12 @@ double route::get_c1_fitness(int i_index, const customer &park, const customer &
 	next.push_forward(newArrival - oldArrival);
 	double newLeave = next.departure;
 	double c_12 = newLeave - oldLeave;
-
-	// double alpha_2 = 1 - alpha_1;
-	// double c_1 = alpha_1 * c_11 + alpha_2 * c_12;
-	return c_12;
+	double alpha_2 = 1 - alpha_1;
+	return (alpha_1 * c_11) + (alpha_2 * c_12);
 }
 
-double route::get_c2_fitness(int i_index, const customer &park, const customer &u, const problem &input, double mu, double lambda, double alpha_1)
+double route::get_c2_fitness(int i_index, const customer &park, const customer &u, const problem &input, double lambda, double c_1)
 {
-	double c_1 = route::get_c1_fitness(i_index, park, u, input, mu, lambda, alpha_1);
 	double d_0u = input.getDistance(0, park.id);
 	double c_2 = lambda * d_0u - c_1;
 	return c_2;
@@ -180,7 +191,7 @@ bool route::check_feasibility(const problem &input)
 		visit next = visits[i + 1];
 
 		newLoad += curr.cust.demand;
-		botDistance += curr.distance;
+		botDistance += 2 * curr.distance;
 
 		// Travel from prev to curr is correct
 		if (prev.park.id != curr.park.id)
@@ -245,17 +256,17 @@ bool route::check_feasibility(const problem &input)
 
 	if (newLoad > capacity)
 	{
-		throw "Feasibility check failure: exceeded capacity!";
+		throw std::runtime_error("Feasibility check failure: exceeded capacity!");
 	}
 
 	if (abs(distance - route::distance) > 0.001)
 	{
-		throw "Feasibility check failure: distance wrong!";
+		throw std::runtime_error("Feasibility check failure: distance wrong!");
 	}
 
 	if (abs(botDistance - route::botDistance) > 0.001)
 	{
-		throw "Feasibility check failure: distance wrong!";
+		throw std::runtime_error("Feasibility check failure: distance wrong!");
 	}
 
 	return true;
