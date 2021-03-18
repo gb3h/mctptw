@@ -38,17 +38,19 @@ double route::get_distance(const problem &input)
 
 visit route::initialise_insertion(int i_index, const customer &park, const customer &u, const problem &input)
 {
-	// Previous delivery's parking is the same as this
-	visit vis = visit(park, u, visits[i_index].arrival, input.getDistance(park.id, u.id), visits[i_index].departure);
-
 	// Previous delivery's parking is elsewhere
 	if (visits[i_index].park.id != park.id)
 	{
 		double travelTime = input.getDistance(visits[i_index].park.id, park.id);
 		double arrival = visits[i_index].departure + travelTime;
-		vis = visit(park, u, arrival, input.getDistance(park.id, u.id), 0);
+		visit vis = visit(park, u, arrival, input.getDistance(park.id, u.id), 0);
+		return vis;
 	}
-	return vis;
+	else
+	{
+		visit vis = visit(park, u, visits[i_index].arrival, input.getDistance(park.id, u.id), visits[i_index].departure);
+		return vis;
+	}
 }
 
 bool route::push_forward_helper(int i_index, const customer &park, const customer &u, const problem &input, bool set)
@@ -66,7 +68,7 @@ bool route::push_forward_helper(int i_index, const customer &park, const custome
 	}
 
 	visit *curr = &vis;
-	visit *next;
+	visit *next = &vis;
 
 	double newLeave, oldLeave;
 	bool updateLeave = false;
@@ -77,13 +79,6 @@ bool route::push_forward_helper(int i_index, const customer &park, const custome
 	for (int j = i_index + 1; j < visits.size(); j++)
 	{
 		next = &visits[j];
-		if (!set)
-		{
-			// Make a copy and dont do any mutation if set == false
-			visit copy = *next;
-			next = &copy;
-		}
-
 		if (curr->park.id != next->park.id)
 		{
 			travelTime = input.getDistance(curr->park.id, next->park.id);
@@ -98,9 +93,20 @@ bool route::push_forward_helper(int i_index, const customer &park, const custome
 		}
 
 		oldLeave = next->departure;
-		next->push_forward(pushForward);
-		newLeave = (curr->park.id == next->park.id) ? fmax(curr->departure, next->departure) : next->departure;
-		next->departure = newLeave;
+		if (set)
+		{
+			next->push_forward(pushForward);
+			newLeave = next->departure;
+			curr = next;
+		}
+		else
+		{
+			visit copy = *next;
+			copy.push_forward(pushForward);
+			newLeave = copy.departure;
+			curr = &copy;
+		}
+
 		updateLeave = (newLeave > oldLeave);
 
 		// Early terminate PushForward loop if there's enough "slack"
@@ -108,8 +114,6 @@ bool route::push_forward_helper(int i_index, const customer &park, const custome
 		{
 			break;
 		}
-
-		curr = next;
 	}
 
 	if (set)
@@ -142,7 +146,7 @@ double route::get_c1_fitness(int i_index, const customer &park, const customer &
 	visit next = visits[i_index + 1];
 
 	visit vis = initialise_insertion(i_index, park, u, input);
-	double travelTime = input.getDistance(next.cust.id, vis.cust.id);
+	double travelTime = input.getDistance(next.park.id, vis.park.id);
 	double oldArrival = next.arrival;
 	double newArrival = vis.departure + travelTime;
 	double oldLeave = next.departure;
@@ -166,6 +170,8 @@ double route::get_c2_fitness(int i_index, const customer &park, const customer &
 bool route::check_feasibility(const problem &input)
 {
 	double newLoad = 0;
+	double distance = 0;
+	double botDistance = 0;
 
 	for (int i = 1; i < visits.size() - 1; i++)
 	{
@@ -174,11 +180,13 @@ bool route::check_feasibility(const problem &input)
 		visit next = visits[i + 1];
 
 		newLoad += curr.cust.demand;
+		botDistance += curr.distance;
 
 		// Travel from prev to curr is correct
 		if (prev.park.id != curr.park.id)
 		{
 			double d_iu = input.getDistance(prev.park.id, curr.park.id);
+			distance += d_iu;
 			if (prev.departure + d_iu - curr.arrival > 0.001)
 			{
 				print(stdout);
@@ -232,9 +240,22 @@ bool route::check_feasibility(const problem &input)
 		}
 	}
 
+	double d_uj = input.getDistance(visits[visits.size() - 2].park.id, visits[visits.size() - 1].park.id);
+	distance += d_uj;
+
 	if (newLoad > capacity)
 	{
 		throw "Feasibility check failure: exceeded capacity!";
+	}
+
+	if (abs(distance - route::distance) > 0.001)
+	{
+		throw "Feasibility check failure: distance wrong!";
+	}
+
+	if (abs(botDistance - route::botDistance) > 0.001)
+	{
+		throw "Feasibility check failure: distance wrong!";
 	}
 
 	return true;

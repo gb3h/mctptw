@@ -28,7 +28,8 @@ private:
 	std::vector<std::vector<double>> distance;
 	std::vector<std::vector<int>> covering; // Vector of parking spaces covering a customer
 	std::vector<std::vector<int>> coverage; // Vector of customers covered by a parking spot
-	int capacity, maxCoverDist;
+	int capacity;
+	double maxCoverDist = 0.2;
 	int numParking, numCustomer;
 	bool shortHorizon;
 };

@@ -4,7 +4,8 @@
 
 using namespace std;
 
-visit::visit(const customer &park, const customer &cust, double arrival, double distance, double departure) : park(park), cust(cust), arrival(arrival), distance(distance), departure(fmax(departure, getEarliestDeparture()))
+visit::visit(const customer &park, const customer &cust, double arrival, double distance, double departure)
+	: park(park), cust(cust), arrival(arrival), distance(distance), departure(fmax(departure, getEarliestDeparture()))
 {
 }
 
@@ -24,8 +25,9 @@ double visit::get_next_push_forward(double pushForward)
 
 bool visit::check_push_forward_feasiblity(double pushForward)
 {
+
 	double newArrival = arrival + pushForward;
-	return newArrival + distance <= cust.end;
+	return (newArrival + distance <= cust.end);
 }
 
 double visit::push_forward(double pushForward)
