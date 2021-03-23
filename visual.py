@@ -25,7 +25,7 @@ def load(filename):
         route = []
         for str_tup in re.sub(", ", ",", res).split():
             x, y = re.sub(r'[()]', '', str_tup).split(",")
-            route.append((int(x), int(y) - num_v - 1))
+            route.append((int(x) - 1, int(y) - num_v - 1))
         return route
 
     def route_to_path(route, color):
@@ -40,6 +40,7 @@ def load(filename):
             string_path_data.append(
                 (patches.Path.LINETO, (customers[customer]['x'], customers[customer]['y'])))
             string_path_data.append(parking_path)
+
         string_path_data.append(
             (patches.Path.LINETO, (depot['x'], depot['y'])))
         codes, verts = zip(*string_path_data)
@@ -48,11 +49,11 @@ def load(filename):
             string_path, facecolor="none", ec=color, lw=1, alpha=1)
         return patch
 
-    for _ in range(1, num_v + 1):
+    for _ in range(0, num_v):
         raw = f.readline().strip().split()
         vertex = dict(zip(VERTEX_PROP, [int(x) for x in raw[1:]]))
         parkings.append(vertex)
-    for _ in range(1, num_w + 1):
+    for _ in range(0, num_w):
         raw = f.readline().strip().split()
         vertex = dict(zip(VERTEX_PROP, [int(x) for x in raw[1:]]))
         customers.append(vertex)
@@ -66,7 +67,7 @@ def load(filename):
     _, axes = plt.subplots()
 
     # Add depot
-    axes.scatter([depot['x']], depot['y'], s=8, c="b", alpha=1, marker="s",
+    axes.scatter(depot['x'], depot['y'], s=8, c="b", alpha=1, marker="s",
                  label="Depot")
 
     # Add parking spots
