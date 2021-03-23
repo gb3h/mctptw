@@ -158,7 +158,8 @@ double route::get_c1_fitness(int i_index, const customer &park, const customer &
 		}
 		double d_pk = input.getDistance(park.id, k.id);
 		double curr = fmin(k.end + d_pk, vis.getEarliestDeparture()) - fmax(fmax(k.start - d_pk, 0), vis.arrival);
-		c_11 += curr;
+		if (curr > 0)
+			c_11 += curr;
 	}
 
 	double travelTime = input.getDistance(next.park.id, vis.park.id);
@@ -169,7 +170,7 @@ double route::get_c1_fitness(int i_index, const customer &park, const customer &
 	double newLeave = next.departure;
 	double c_12 = newLeave - oldLeave;
 	double alpha_2 = 1 - alpha_1;
-	return (alpha_1 * c_11) + (alpha_2 * c_12);
+	return (alpha_1 * -c_11) + (alpha_2 * c_12);
 }
 
 double route::get_c2_fitness(int i_index, const customer &park, const customer &u, const problem &input, double lambda, double c_1)

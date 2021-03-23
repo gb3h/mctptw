@@ -41,6 +41,12 @@ bool problem::load(const char *filename)
 		return false;
 	}
 
+	if (fscanf(fp, "%lf", &maxCoverDist) != 1)
+	{
+		fclose(fp);
+		return false;
+	}
+
 	int numParking;
 	if (fscanf(fp, "%d", &numParking) != 1)
 	{
