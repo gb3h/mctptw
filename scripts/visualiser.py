@@ -1,3 +1,5 @@
+# Script to display a mctptw test set and result from a run
+# Example use: python visualiser.py ../mctptw.out ../covering_problems/0025_0050_C101.txt 1 0.4
 import sys
 import re
 import subprocess
@@ -102,8 +104,8 @@ def draw_routes(res, axes):
               va="center", ha="left")
 
 
-def run_mctptw(filename, params):
-    full_input = ["./mctptw.out", filename] + params
+def run_mctptw(command, filename, params):
+    full_input = [command, filename] + params
     output = subprocess.check_output(
         full_input).decode("utf-8").split('\n')
 
@@ -118,20 +120,21 @@ def run_mctptw(filename, params):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         raise Exception('No file given')
-    filename = sys.argv[1]
+    command = sys.argv[1]
+    filename = sys.argv[2]
     params = ["1", "0.1"]
 
-    if len(sys.argv) == 4:
-        params[0] = sys.argv[2]
-        params[1] = sys.argv[3]
+    if len(sys.argv) == 5:
+        params[0] = sys.argv[3]
+        params[1] = sys.argv[4]
 
     _, axes = plt.subplots()
     axes.set_aspect(1)
 
     load(filename, axes)
-    res = run_mctptw(filename, params)
+    res = run_mctptw(command, filename, params)
     draw_routes(res, axes)
 
     plt.xlabel("X Coordinate")

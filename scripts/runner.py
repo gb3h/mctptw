@@ -1,3 +1,5 @@
+# Script to run algorithm on a variety of parameters over different test sets and collate data
+
 import os
 import re
 import subprocess
