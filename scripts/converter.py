@@ -140,12 +140,14 @@ if __name__ == "__main__":
         raise Exception('No file given')
     filepath = sys.argv[1]
     outdir = sys.argv[2]
-    load(filepath)
-
-    generate()
-
-    filename = os.path.split(filepath)[-1]
-    num, rest = filename.split(".txt")[0].split("_")
-    outfile = os.path.join(
-        outdir, f'{num}_{str(SETTINGS["num_cust"]).zfill(4)}_{rest}{MODE}.txt')
-    write_out(outfile)
+    for mode in MODES:
+        SETTINGS = MODES[mode]
+        PARKINGS.clear()
+        CUSTOMERS.clear()
+        load(filepath)
+        generate()
+        filename = os.path.split(filepath)[-1]
+        num, rest = filename.split(".txt")[0].split("_")
+        outfile = os.path.join(
+            outdir, f'{num}_{str(SETTINGS["num_cust"]).zfill(4)}_{rest}{mode}.txt')
+        write_out(outfile)
