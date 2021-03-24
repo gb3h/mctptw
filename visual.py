@@ -1,5 +1,6 @@
 import sys
 import re
+import subprocess
 import matplotlib._color_data as mcd
 import matplotlib.path as path
 import matplotlib.pyplot as plt
@@ -7,47 +8,23 @@ import matplotlib.patches as patches
 import numpy as np
 
 VERTEX_PROP = ['x', 'y', 'demand', 'start', 'end', 'service']
-COLORS = ['black', 'g', 'b', 'purple', 'brown', 'orange']
+COLORS = ['orange', 'g', 'b', 'purple', 'brown', 'black']
+num_v_w = []
+parkings = []
+customers = []
+depot = []
 
 
-def load(filename):
-    parkings = []
-    customers = []
+def load(filename, axes):
     f = open(filename, "r")
     _ = int(f.readline().strip())
-    RADIUS = int(f.readline().strip())
+    RADIUS = float(f.readline().strip())
     num_v = int(f.readline().strip())
     num_w = int(f.readline().strip())
+    num_v_w.append(num_v)
+    num_v_w.append(num_w)
     depot_raw = f.readline().strip().split()
-    depot = dict(zip(VERTEX_PROP, [int(x) for x in depot_raw[1:]]))
-
-    def parse_str_route(res):
-        route = []
-        for str_tup in re.sub(", ", ",", res).split():
-            x, y = re.sub(r'[()]', '', str_tup).split(",")
-            route.append((int(x) - 1, int(y) - num_v - 1))
-        return route
-
-    def route_to_path(route, color):
-        string_path_data = []
-        string_path_data.append(
-            (patches.Path.MOVETO, (depot['x'], depot['y'])))
-        for visit in route:
-            parking, customer = visit
-            parking_path = (patches.Path.LINETO,
-                            (parkings[parking]['x'], parkings[parking]['y']))
-            string_path_data.append(parking_path)
-            string_path_data.append(
-                (patches.Path.LINETO, (customers[customer]['x'], customers[customer]['y'])))
-            string_path_data.append(parking_path)
-
-        string_path_data.append(
-            (patches.Path.LINETO, (depot['x'], depot['y'])))
-        codes, verts = zip(*string_path_data)
-        string_path = path.Path(verts, codes)
-        patch = patches.PathPatch(
-            string_path, facecolor="none", ec=color, lw=1, alpha=1)
-        return patch
+    depot.append(dict(zip(VERTEX_PROP, [int(x) for x in depot_raw[1:]])))
 
     for _ in range(0, num_v):
         raw = f.readline().strip().split()
@@ -64,10 +41,8 @@ def load(filename):
     customers_x = [customer['x'] for customer in customers]
     customers_y = [customer['y'] for customer in customers]
 
-    _, axes = plt.subplots()
-
     # Add depot
-    axes.scatter(depot['x'], depot['y'], s=8, c="b", alpha=1, marker="s",
+    axes.scatter(depot[0]['x'], depot[0]['y'], s=8, c="b", alpha=1, marker="s",
                  label="Depot")
 
     # Add parking spots
@@ -82,27 +57,84 @@ def load(filename):
     axes.scatter(customers_x, customers_y, s=8, c="r", alpha=1, marker="o",
                  label="Customers")
 
-    axes.set_aspect(1)
 
-    res = ["(20, 45) (20, 70) (22, 74) (22, 49) (22, 72) (22, 46) (22, 47) (22, 50) (22, 75) (8, 58) (8, 33) (8, 60) (8, 35) (8, 36) (8, 61) (8, 34) (6, 31) (6, 56) (4, 54) (4, 29) (2, 52) (2, 27) (2, 51) (2, 26)",
-           "(5, 30) (5, 55) (5, 28) (5, 53) (5, 32) (5, 57) (19, 44) (19, 69) (15, 40) (15, 65) (14, 41) (14, 66) (14, 39) (14, 64) (12, 37) (12, 62) (21, 71)",
-           "(13, 38) (13, 63) (13, 42) (17, 43) (17, 68) (6, 59) (23, 48) (23, 73)",
-           "(17, 67)"
-           ]
-    routes = [parse_str_route(s) for s in res]
+def parse_str_route(res):
+    route = []
+    for str_tup in re.sub(", ", ",", res).split():
+        x, y = re.sub(r'[()]', '', str_tup).split(",")
+        route.append((int(x) - 1, int(y) - num_v_w[0] - 1))
+    return route
+
+
+def route_to_path(route, color):
+    string_path_data = []
+    string_path_data.append(
+        (patches.Path.MOVETO, (depot[0]['x'], depot[0]['y'])))
+    for visit in route:
+        parking, customer = visit
+        parking_path = (patches.Path.LINETO,
+                        (parkings[parking]['x'], parkings[parking]['y']))
+        string_path_data.append(parking_path)
+        string_path_data.append(
+            (patches.Path.LINETO, (customers[customer]['x'], customers[customer]['y'])))
+        string_path_data.append(parking_path)
+
+    string_path_data.append(
+        (patches.Path.LINETO, (depot[0]['x'], depot[0]['y'])))
+    codes, verts = zip(*string_path_data)
+    string_path = path.Path(verts, codes)
+    patch = patches.PathPatch(
+        string_path, facecolor="none", ec=color, lw=1, alpha=1)
+    return patch
+
+
+def draw_routes(res, axes):
+    routes = [parse_str_route(s) for s in res[0]]
     path_patches = [route_to_path(route, COLORS[ind])
                     for ind, route in enumerate(routes)]
-
     [axes.add_patch(path) for path in path_patches]
+    textstr = '\n'.join((
+        f'Num routes={len(res[0])}',
+        f'Total distance={res[1]}',
+        f'Bot distance={res[2]}'))
 
-    plt.xlabel("X Coordinate")
-    plt.ylabel("Y Coordinate")
-    plt.legend(bbox_to_anchor=(1.5, 1))
-    plt.show()
+    axes.text(1.02, 0.5, textstr, transform=axes.transAxes,
+              va="center", ha="left")
+
+
+def run_mctptw(filename, params):
+    full_input = ["./mctptw.out", filename] + params
+    output = subprocess.check_output(
+        full_input).decode("utf-8").split('\n')
+
+    n_routes = int(output[0].split()[0])
+    dist = float(output[1].split()[0])
+    bot_dist = float(output[2].split()[0])
+    routes = []
+    for i in range(3, n_routes + 3):
+        curr = output[i].split(":")[1].strip()
+        routes.append(curr)
+    return (routes, dist, bot_dist)
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         raise Exception('No file given')
     filename = sys.argv[1]
-    load(filename)
+    params = ["1", "0.1"]
+
+    if len(sys.argv) == 4:
+        params[0] = sys.argv[2]
+        params[1] = sys.argv[3]
+
+    _, axes = plt.subplots()
+    axes.set_aspect(1)
+
+    load(filename, axes)
+    res = run_mctptw(filename, params)
+    draw_routes(res, axes)
+
+    plt.xlabel("X Coordinate")
+    plt.ylabel("Y Coordinate")
+    plt.legend(bbox_to_anchor=(1.5, 1))
+    plt.show()

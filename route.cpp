@@ -141,12 +141,11 @@ bool route::set_push_forward(int i_index, const customer &park, const customer &
 	return push_forward_helper(i_index, park, u, input, true);
 }
 
-double route::get_c1_fitness(int i_index, const customer &park, const customer &u, const problem &input, double alpha_1, set<int> unrouted)
+double route::get_c11_fitness(int i_index, const customer &park, const customer &u, const problem &input, set<int> unrouted)
 {
 	visit prev = visits[i_index];
 	visit next = visits[i_index + 1];
 	visit vis = initialise_insertion(i_index, park, u, input);
-
 	vector<int> coverage = input.getCoverage(park.id);
 	double c_11 = 0;
 	for (int i = 0; i < coverage.size(); i++)
@@ -161,6 +160,14 @@ double route::get_c1_fitness(int i_index, const customer &park, const customer &
 		if (curr > 0)
 			c_11 += curr;
 	}
+	return c_11;
+}
+
+double route::get_c12_fitness(int i_index, const customer &park, const customer &u, const problem &input)
+{
+	visit prev = visits[i_index];
+	visit next = visits[i_index + 1];
+	visit vis = initialise_insertion(i_index, park, u, input);
 
 	double travelTime = input.getDistance(next.park.id, vis.park.id);
 	double oldArrival = next.arrival;
@@ -169,8 +176,7 @@ double route::get_c1_fitness(int i_index, const customer &park, const customer &
 	next.push_forward(newArrival - oldArrival);
 	double newLeave = next.departure;
 	double c_12 = newLeave - oldLeave;
-	double alpha_2 = 1 - alpha_1;
-	return (alpha_1 * -c_11) + (alpha_2 * c_12);
+	return c_12;
 }
 
 double route::get_c2_fitness(int i_index, const customer &park, const customer &u, const problem &input, double lambda, double c_1)

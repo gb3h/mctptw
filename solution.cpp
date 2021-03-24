@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
+#include <limits>
 #include <queue>
 #include "solution.h"
 
@@ -65,8 +66,14 @@ void solution::solomon(const problem &input, double lambda, double alpha_1)
 					bool isFeasible = routes[i].check_push_forward(prev, input[covering[j]], input[currCustomer], input);
 					if (isFeasible)
 					{
-						double c1_fitness = routes[i].get_c1_fitness(prev, input[covering[j]], input[currCustomer], input, alpha_1, unrouted);
+						double c11_fitness = routes[i].get_c11_fitness(prev, input[covering[j]], input[currCustomer], input, unrouted);
+						double c12_fitness = routes[i].get_c12_fitness(prev, input[covering[j]], input[currCustomer], input);
 						// fprintf(stdout, "(%d, %d) route: %d, c1 fitness: %.3f\n", covering[j], currCustomer - 25, i, c1_fitness);
+						double c1_fitness = (alpha_1 * -c11_fitness) + ((1 - alpha_1) * c12_fitness);
+						if (c12_fitness == 0)
+						{
+							c1_fitness = -std::numeric_limits<double>::infinity();
+						}
 						if ((currHasUpdated == false) || (c1_fitness < currBestFitness))
 						{
 							currHasUpdated = true;
