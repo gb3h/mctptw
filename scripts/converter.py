@@ -63,9 +63,6 @@ MODES = {
     },
 }
 
-MODE = "_CTW_CC"
-SETTINGS = MODES[MODE]
-
 
 def load(filename):
     f = open(filename, "r")
@@ -135,13 +132,10 @@ def parking_to_string(id, vertex):
     return str(id) + "\t" + "\t".join([str(vertex[x]) for x in VERTEX_PROP])
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        raise Exception('No file given')
-    filepath = sys.argv[1]
-    outdir = sys.argv[2]
+def run(filepath, outdir):
     for mode in MODES:
-        SETTINGS = MODES[mode]
+        for key in SETTINGS:
+            SETTINGS[key] = MODES[mode][key]
         PARKINGS.clear()
         CUSTOMERS.clear()
         load(filepath)
@@ -151,3 +145,15 @@ if __name__ == "__main__":
         outfile = os.path.join(
             outdir, f'{num}_{str(SETTINGS["num_cust"]).zfill(4)}_{rest}{mode}.txt')
         write_out(outfile)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        raise Exception('No file given')
+    indir = sys.argv[1]
+    outdir = sys.argv[2]
+    regex = re.compile('(0025)+')
+    for filename in os.listdir(indir):
+        if re.match(regex, filename):
+            filepath = os.path.join(indir, filename)
+            run(filepath, outdir)
