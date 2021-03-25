@@ -99,10 +99,9 @@ def generate():
             cust['start'] = max(0, cust['start'] + window_offset)
             cust['end'] = min(SETTINGS["depot"]["end"],
                               cust['end'] + window_offset)
-
-            if dist(SETTINGS["depot"], cust) > (cust['end'] - SETTINGS["radius"]):
-                cust['end'] = min(dist(SETTINGS["depot"], cust) +
-                                  2 * SETTINGS["radius"], SETTINGS["depot"]["end"])
+            radius = math.ceil(math.sqrt(2 * (SETTINGS["radius"]**2)))
+            cust['end'] = max(cust['end'], dist(SETTINGS["depot"], cust) +
+                              (2 * radius))
             CUSTOMERS.append(cust)
 
 
@@ -154,6 +153,8 @@ if __name__ == "__main__":
     outdir = sys.argv[2]
     regex = re.compile('(0025)+')
     for filename in os.listdir(indir):
+        # filename = "0025_C101.txt"
         if re.match(regex, filename):
+            # print(filename)
             filepath = os.path.join(indir, filename)
             run(filepath, outdir)

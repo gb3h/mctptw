@@ -118,6 +118,16 @@ void solution::solomon(const problem &input, double lambda, double alpha_1)
 			routes[routes.size() - 1].visits.push_back(depotStop);
 			routes[routes.size() - 1].visits.push_back(depotStop);
 			routes[routes.size() - 1].capacity = input.getCapacity();
+			if (routes.size() > 1 && routes[routes.size() - 2].visits.size() == 2)
+			{
+				printf("Insertion Failure:");
+				for (auto failed : unrouted)
+				{
+					printf(" %d", failed - input.getNumParking());
+				}
+				printf("\n");
+				throw "Some unrouted infeasible";
+			}
 		}
 	}
 

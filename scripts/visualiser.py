@@ -134,8 +134,8 @@ if __name__ == "__main__":
     axes.set_aspect(1)
 
     load(filename, axes)
-    res = run_mctptw(command, filename, params)
-    draw_routes(res, axes)
+    # res = run_mctptw(command, filename, params)
+    # draw_routes(res, axes)
 
     plt.xlabel("X Coordinate")
     plt.ylabel("Y Coordinate")
