@@ -40,22 +40,22 @@ MODES = {
         "depot": {},
         "capacity": 0
     },
-    "_S": {
-        "cust_per_parking": 8,
-        "num_parking": 0,
-        "num_cust": 0,
-        "radius": 3,
-        "depot": {},
-        "capacity": 0
-    },
-    "_D": {
-        "cust_per_parking": 8,
-        "num_parking": 0,
-        "num_cust": 0,
-        "radius": 3,
-        "depot": {},
-        "capacity": 0
-    },
+    # "_S": {
+    #     "cust_per_parking": 8,
+    #     "num_parking": 0,
+    #     "num_cust": 0,
+    #     "radius": 3,
+    #     "depot": {},
+    #     "capacity": 0
+    # },
+    # "_D": {
+    #     "cust_per_parking": 8,
+    #     "num_parking": 0,
+    #     "num_cust": 0,
+    #     "radius": 3,
+    #     "depot": {},
+    #     "capacity": 0
+    # },
 }
 
 WINDOW_SETTINGS = {
@@ -152,14 +152,19 @@ def create_windows(window_type):
     length = math.floor(window_type["window_proportion"] * end)
     end = end - length
     for cust in CUSTOMERS:
-        start_point = random.randint(start, end)
-        cust["start"] = start_point
-        cust["end"] = start_point + length
-        radius = math.ceil(math.sqrt(2 * (SETTINGS["radius"]**2)))
-        min_travel = dist(SETTINGS["depot"], cust) + (2 * radius)
-        cust["end"] = max(cust["end"], min_travel)
-        cust["start"] = min(cust["start"], SETTINGS["depot"]
-                            ["end"] - min_travel - cust["service"])
+        chance = random.randint(0, 99)
+        if chance >= window_type["window_chance"]:
+            cust["start"] = start
+            cust["end"] = SETTINGS["depot"]["end"] - cust["service"]
+        else:
+            start_point = random.randint(start, end)
+            cust["start"] = start_point
+            cust["end"] = start_point + length
+            radius = math.ceil(math.sqrt(2 * (SETTINGS["radius"]**2)))
+            min_travel = dist(SETTINGS["depot"], cust) + (2 * radius)
+            cust["end"] = max(cust["end"], min_travel)
+            cust["start"] = min(cust["start"], SETTINGS["depot"]
+                                ["end"] - min_travel - cust["service"])
 
 
 def run(filepath, outdir):

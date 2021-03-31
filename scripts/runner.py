@@ -5,83 +5,97 @@ import re
 import subprocess
 
 
-parameters = {
-    # Solomon's Default (alpha1 = 0, alpha2 = 1)
-    "DEFAULT_L0": {"lambda": 0, "alpha1": 0},
-    "DEFAULT_L1": {"lambda": 1, "alpha1": 0},
-    "DEFAULT_L2": {"lambda": 2, "alpha1": 0},
-    "DEFAULT_L3": {"lambda": 3, "alpha1": 0},
+solomon_parameters = {
+    "S_L1,0.00": {"lambda": 1, "alpha1": 0},
+    "S_L1,0.25": {"lambda": 1, "alpha1": 0.25},
+    "S_L1,0.5": {"lambda": 1, "alpha1": 0.5},
+    "S_L2,0.00": {"lambda": 2, "alpha1": 0},
+    "S_L2,0.25": {"lambda": 2, "alpha1": 0.25},
+    "S_L2,0.5": {"lambda": 2, "alpha1": 0.5},
 
-    # POINT1 Weighted Overlap
-    "POINT1_L0": {"lambda": 0, "alpha1": 0.1},
-    "POINT1_L1": {"lambda": 1, "alpha1": 0.1},
-    "POINT1_L2": {"lambda": 2, "alpha1": 0.1},
-    "POINT1_L3": {"lambda": 3, "alpha1": 0.1},
+}
 
-    # POINT2 Weighted Overlap
-    "POINT2_L0": {"lambda": 0, "alpha1": 0.2},
-    "POINT2_L1": {"lambda": 1, "alpha1": 0.2},
-    "POINT2_L2": {"lambda": 2, "alpha1": 0.2},
-    "POINT2_L3": {"lambda": 3, "alpha1": 0.2},
-
-    # POINT3 Weighted Overlap
-    "POINT3_L0": {"lambda": 0, "alpha1": 0.3},
-    "POINT3_L1": {"lambda": 1, "alpha1": 0.3},
-    "POINT3_L2": {"lambda": 2, "alpha1": 0.3},
-    "POINT3_L3": {"lambda": 3, "alpha1": 0.3},
-
-    # POINT4 Weighted Overlap
-    "POINT4_L0": {"lambda": 0, "alpha1": 0.4},
-    "POINT4_L1": {"lambda": 1, "alpha1": 0.4},
-    "POINT4_L2": {"lambda": 2, "alpha1": 0.4},
-    "POINT4_L3": {"lambda": 3, "alpha1": 0.4},
+overlap_parameters = {
+    "O_,0.00": {"lambda": 1, "alpha1": 0},
+    "O_,0.25": {"lambda": 1, "alpha1": 0.25},
+    "O_,0.5": {"lambda": 1, "alpha1": 0.5},
 }
 
 
 counter = {}
 params_str = []
-for name in parameters:
-    param = parameters[name]
-    params = f'{param["lambda"]},{param["alpha1"]}'
-    params_str.append(params)
-    counter[params] = 0
+for name in solomon_parameters:
+    params_str.append(name)
+    counter[name] = 0
+
+for name in overlap_parameters:
+    params_str.append(name)
+    counter[name] = 0
+
 row_format = "{:<26}" + "{:<16}" + "{:>12}" * (len(params_str))
 print(row_format.format("", "Best", *params_str))
 
-regex = re.compile('(0025_0075_R)+')
-command = [f'../mctptw.out']
+# regex = re.compile('(0025_0075_R)+')
+commands = [[f'../mctptw.out'], [f'../mctptw_overlap.out']]
 files = []
 for filename in os.listdir('../covering_problems'):
-    if not re.match(regex, filename):
-        continue
-    files.append(filename)
+    filepath = os.path.join('../covering_problems', filename)
+    if os.path.isdir(filepath):
+        full_input = os.path.join(filepath, f'{filename}.txt')
+        # if not re.match(regex, filename):
+        # continue
+        files.append(full_input)
+
 files.sort()
 for filename in files:
-    input_file_string = f'../covering_problems/{filename}'
+    input_file_string = filename
     output_list = []
     best = None
     best_n = -1
     best_dist = -1
-    for name in parameters:
-        param = parameters[name]
+    for name in solomon_parameters:
+        param = solomon_parameters[name]
         params = [str(param["lambda"]), str(param["alpha1"])]
-        full_input = command + [input_file_string] + params
+        full_input = commands[0] + [input_file_string] + params
         output = subprocess.check_output(
             full_input).decode("utf-8").split('\n')
         num_routes = int(output[0].split(' ')[0])
         distance = float(output[1].split(' ')[0])
-        param_str = ','.join(params)
         if not best:
-            best = param_str
+            best = name
             best_dist = distance
             best_n = num_routes
         if num_routes == best_n:
             if distance < best_dist:
-                best = param_str
+                best = name
                 best_dist = distance
                 best_n = num_routes
         elif num_routes < best_n:
-            best = param_str
+            best = name
+            best_dist = distance
+            best_n = num_routes
+        distance = round(distance)
+        output_list.append(f'({num_routes}, {distance})')
+
+    for name in overlap_parameters:
+        param = overlap_parameters[name]
+        params = [str(param["lambda"]), str(param["alpha1"])]
+        full_input = commands[1] + [input_file_string] + params
+        output = subprocess.check_output(
+            full_input).decode("utf-8").split('\n')
+        num_routes = int(output[0].split(' ')[0])
+        distance = float(output[1].split(' ')[0])
+        if not best:
+            best = name
+            best_dist = distance
+            best_n = num_routes
+        if num_routes == best_n:
+            if distance < best_dist:
+                best = name
+                best_dist = distance
+                best_n = num_routes
+        elif num_routes < best_n:
+            best = name
             best_dist = distance
             best_n = num_routes
 
@@ -89,7 +103,7 @@ for filename in files:
         output_list.append(f'({num_routes}, {distance})')
 
     counter[best] += 1
-    print(row_format.format(filename,
+    print(row_format.format(os.path.split(filename)[-1],
                             f'[{best}: ({best_n}, {round(best_dist)})]', *output_list))
 
 counter_output = []

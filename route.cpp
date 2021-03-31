@@ -186,6 +186,7 @@ double route::get_c2_fitness(int i_index, const customer &park, const customer &
 	double d_0u = input.getDistance(0, park.id);
 	double c_2 = lambda * d_0u - c_1;
 	return c_2;
+	// return -c_1;
 }
 
 bool route::check_feasibility(const problem &input)
