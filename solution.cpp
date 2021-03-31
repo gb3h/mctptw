@@ -128,6 +128,34 @@ void solution::solomon(const problem &input, double lambda, double alpha_1)
 				printf("\n");
 				throw "Some unrouted infeasible";
 			}
+
+			// int bestParking = -1;
+			// int bestCustomer = -1;
+			// double bestCustomerFitness = 0;
+			// bool set = false;
+
+			// for (auto currCustomer : unrouted)
+			// {
+			// 	vector<int> covering = input.getCovering(currCustomer);
+			// 	for (int j = 0; j < covering.size(); j++)
+			// 	{
+			// 		double currFitness = routes[routes.size() - 1].get_c11_fitness(0, input[covering[j]], input[currCustomer], input, unrouted);
+			// 		if ((!set) || currFitness > bestCustomerFitness)
+			// 		{
+			// 			set = true;
+			// 			bestCustomerFitness = currFitness;
+			// 			bestCustomer = currCustomer;
+			// 			bestParking = covering[j];
+			// 		}
+			// 	}
+			// }
+
+			// if (set)
+			// {
+			// 	vector<visit>::iterator it = routes[routes.size() - 1].visits.begin();
+			// 	routes[routes.size() - 1].set_push_forward(0, input[bestParking], input[bestCustomer], input);
+			// 	unrouted.erase(bestCustomer);
+			// }
 		}
 	}
 

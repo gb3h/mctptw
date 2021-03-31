@@ -48,7 +48,7 @@ for name in parameters:
 row_format = "{:<26}" + "{:<16}" + "{:>12}" * (len(params_str))
 print(row_format.format("", "Best", *params_str))
 
-regex = re.compile('(0025)+')
+regex = re.compile('(0025_0075_R)+')
 command = [f'../mctptw.out']
 files = []
 for filename in os.listdir('../covering_problems'):

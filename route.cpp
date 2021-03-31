@@ -156,7 +156,9 @@ double route::get_c11_fitness(int i_index, const customer &park, const customer 
 			continue;
 		}
 		double d_pk = input.getDistance(park.id, k.id);
-		double curr = fmin(k.end + d_pk, vis.getEarliestDeparture()) - fmax(fmax(k.start - d_pk, 0), vis.arrival);
+		double curr = fmin(k.end + d_pk, vis.getEarliestDeparture()) - fmax(fmax(k.start - d_pk, 0), fmax(vis.arrival, vis.getEarliestStart()));
+		// printf("Park:%d, Cust:%d, Other:%d, Overlap:%.2f\n", park.id, u.id - input.getNumParking(), k.id - input.getNumParking(), curr);
+		// printf("Arrival:%.2f, earliest dept:%.2f\n", vis.arrival, vis.getEarliestDeparture());
 		if (curr > 0)
 			c_11 += curr;
 	}

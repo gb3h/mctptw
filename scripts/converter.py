@@ -19,47 +19,69 @@ SETTINGS = {
     "num_parking": 0,
     "num_cust": 0,
     "radius": 0,
-    "window_offset": 0,
     "depot": {},
     "capacity": 0
 }
 
 MODES = {
-    "_CTW_CC": {
-        "cust_per_parking": 3,
+    "_S": {
+        "cust_per_parking": 4,
         "num_parking": 0,
         "num_cust": 0,
         "radius": 2,
-        "window_offset": 10,
         "depot": {},
         "capacity": 0
     },
-    "_CTW_SC": {
-        "cust_per_parking": 3,
+    "_D": {
+        "cust_per_parking": 4,
         "num_parking": 0,
         "num_cust": 0,
-        "radius": 4,
-        "window_offset": 10,
+        "radius": 3,
         "depot": {},
         "capacity": 0
     },
-    "_STW_CC": {
-        "cust_per_parking": 3,
+    "_S": {
+        "cust_per_parking": 8,
         "num_parking": 0,
         "num_cust": 0,
-        "radius": 2,
-        "window_offset": 200,
+        "radius": 3,
         "depot": {},
         "capacity": 0
     },
-    "_STW_SC": {
-        "cust_per_parking": 3,
+    "_D": {
+        "cust_per_parking": 8,
         "num_parking": 0,
         "num_cust": 0,
-        "radius": 4,
-        "window_offset": 200,
+        "radius": 3,
         "depot": {},
         "capacity": 0
+    },
+}
+
+WINDOW_SETTINGS = {
+    "_01": {
+        "window_chance": 25,
+        "window_proportion": 0.05,
+    },
+    "_02": {
+        "window_chance": 50,
+        "window_proportion": 0.05,
+    },
+    "_03": {
+        "window_chance": 75,
+        "window_proportion": 0.05,
+    },
+    "_04": {
+        "window_chance": 100,
+        "window_proportion": 0.05,
+    },
+    "_05": {
+        "window_chance": 100,
+        "window_proportion": 0.1,
+    },
+    "_06": {
+        "window_chance": 100,
+        "window_proportion": 0.2,
     },
 }
 
@@ -69,7 +91,8 @@ def load(filename):
     SETTINGS["capacity"] = int(f.readline().strip())
     SETTINGS["num_parking"] = int(f.readline().strip())
     depot_raw = f.readline().strip().split()
-    SETTINGS["depot"] = dict(zip(VERTEX_PROP, [int(x) for x in depot_raw[1:]]))
+    depot = dict(zip(VERTEX_PROP, [int(x) for x in depot_raw[1:]]))
+    SETTINGS["depot"] = depot
 
     SETTINGS["num_cust"] = SETTINGS["num_parking"] * \
         SETTINGS["cust_per_parking"]
@@ -93,15 +116,7 @@ def generate():
                                         SETTINGS["radius"])
             cust['y'] += random.randint(-SETTINGS["radius"],
                                         SETTINGS["radius"])
-            window_offset = random.randint(-SETTINGS["window_offset"],
-                                           SETTINGS["window_offset"])
 
-            cust['start'] = max(0, cust['start'] + window_offset)
-            cust['end'] = min(SETTINGS["depot"]["end"],
-                              cust['end'] + window_offset)
-            radius = math.ceil(math.sqrt(2 * (SETTINGS["radius"]**2)))
-            cust['end'] = max(cust['end'], dist(SETTINGS["depot"], cust) +
-                              (2 * radius))
             CUSTOMERS.append(cust)
 
 
@@ -131,6 +146,22 @@ def parking_to_string(id, vertex):
     return str(id) + "\t" + "\t".join([str(vertex[x]) for x in VERTEX_PROP])
 
 
+def create_windows(window_type):
+    start = SETTINGS["depot"]["start"]
+    end = SETTINGS["depot"]["end"]
+    length = math.floor(window_type["window_proportion"] * end)
+    end = end - length
+    for cust in CUSTOMERS:
+        start_point = random.randint(start, end)
+        cust["start"] = start_point
+        cust["end"] = start_point + length
+        radius = math.ceil(math.sqrt(2 * (SETTINGS["radius"]**2)))
+        min_travel = dist(SETTINGS["depot"], cust) + (2 * radius)
+        cust["end"] = max(cust["end"], min_travel)
+        cust["start"] = min(cust["start"], SETTINGS["depot"]
+                            ["end"] - min_travel - cust["service"])
+
+
 def run(filepath, outdir):
     for mode in MODES:
         for key in SETTINGS:
@@ -139,11 +170,18 @@ def run(filepath, outdir):
         CUSTOMERS.clear()
         load(filepath)
         generate()
-        filename = os.path.split(filepath)[-1]
-        num, rest = filename.split(".txt")[0].split("_")
-        outfile = os.path.join(
-            outdir, f'{num}_{str(SETTINGS["num_cust"]).zfill(4)}_{rest}{mode}.txt')
-        write_out(outfile)
+        for window_type in WINDOW_SETTINGS:
+            create_windows(WINDOW_SETTINGS[window_type])
+            filename = os.path.split(filepath)[-1]
+            num, rest = filename.split(".txt")[0].split("_")
+            fname = f'{num}_{str(SETTINGS["num_cust"]).zfill(4)}_{rest}{mode}{window_type}'
+            newdir = os.path.join(
+                outdir, fname)
+            if not os.path.isdir(newdir):
+                os.mkdir(newdir)
+            outfile = os.path.join(
+                newdir, f'{fname}.txt')
+            write_out(outfile)
 
 
 if __name__ == "__main__":
@@ -151,10 +189,10 @@ if __name__ == "__main__":
         raise Exception('No file given')
     indir = sys.argv[1]
     outdir = sys.argv[2]
-    regex = re.compile('(0025)+')
+    # regex = re.compile('(0025_C1)+')
     for filename in os.listdir(indir):
         # filename = "0025_C101.txt"
-        if re.match(regex, filename):
-            # print(filename)
-            filepath = os.path.join(indir, filename)
-            run(filepath, outdir)
+        # if re.match(regex, filename):
+        # print(filename)
+        filepath = os.path.join(indir, filename)
+        run(filepath, outdir)

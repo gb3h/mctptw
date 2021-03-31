@@ -2,15 +2,17 @@
 # Example use: python visualiser.py ../mctptw.out ../covering_problems/0025_0050_C101.txt 1 0.4
 import sys
 import re
+import os
 import subprocess
 import matplotlib._color_data as mcd
 import matplotlib.path as path
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import matplotlib.colors as mcolors
 import numpy as np
 
 VERTEX_PROP = ['x', 'y', 'demand', 'start', 'end', 'service']
-COLORS = ['orange', 'g', 'b', 'purple', 'brown', 'black']
+COLORS = list(mcolors.TABLEAU_COLORS)
 num_v_w = []
 parkings = []
 customers = []
@@ -18,6 +20,10 @@ depot = []
 
 
 def load(filename, axes):
+    num_v_w.clear()
+    parkings.clear()
+    customers.clear()
+    depot.clear()
     f = open(filename, "r")
     _ = int(f.readline().strip())
     RADIUS = float(f.readline().strip())
@@ -92,7 +98,7 @@ def route_to_path(route, color):
 
 def draw_routes(res, axes):
     routes = [parse_str_route(s) for s in res[0]]
-    path_patches = [route_to_path(route, COLORS[ind])
+    path_patches = [route_to_path(route, COLORS[ind % len(COLORS)])
                     for ind, route in enumerate(routes)]
     [axes.add_patch(path) for path in path_patches]
     textstr = '\n'.join((
@@ -119,25 +125,53 @@ def run_mctptw(command, filename, params):
     return (routes, dist, bot_dist)
 
 
+# if __name__ == "__main__":
+#     if len(sys.argv) < 2:
+#         raise Exception('No file given')
+#     filename = sys.argv[1]
+#     params = ["1", "0.1"]
+
+#     if len(sys.argv) == 5:
+#         params[0] = sys.argv[3]
+#         params[1] = sys.argv[4]
+
+#     _, axes = plt.subplots()
+#     axes.set_aspect(1)
+
+#     load(filename, axes)
+
+#     if len(sys.argv) > 2:
+#         command = sys.argv[2]
+#         res = run_mctptw(command, filename, params)
+#         draw_routes(res, axes)
+
+#     plt.xlabel("X Coordinate")
+#     plt.ylabel("Y Coordinate")
+#     plt.legend(bbox_to_anchor=(1.5, 1))
+#     plt.show()
+
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         raise Exception('No file given')
-    command = sys.argv[1]
-    filename = sys.argv[2]
-    params = ["1", "0.1"]
+    indir = sys.argv[1]
 
-    if len(sys.argv) == 5:
-        params[0] = sys.argv[3]
-        params[1] = sys.argv[4]
+    # regex = re.compile('(0025_0100_C1_D_01)+')
+    for filename in os.listdir(indir):
+        # if re.match(regex, filename):
+        filepath = os.path.join(indir, filename)
+        if os.path.isdir(filepath):
+            print(filepath)
+            full_input = os.path.join(filepath, f'{filename}.txt')
 
-    _, axes = plt.subplots()
-    axes.set_aspect(1)
+            _, axes = plt.subplots()
+            axes.set_aspect(1)
 
-    load(filename, axes)
-    # res = run_mctptw(command, filename, params)
-    # draw_routes(res, axes)
+            load(full_input, axes)
 
-    plt.xlabel("X Coordinate")
-    plt.ylabel("Y Coordinate")
-    plt.legend(bbox_to_anchor=(1.5, 1))
-    plt.show()
+            outpath = os.path.join(filepath, filename)
+            plt.xlabel("X Coordinate")
+            plt.ylabel("Y Coordinate")
+            plt.legend(bbox_to_anchor=(1.5, 1))
+            plt.savefig(outpath)
+            axes.remove()
+            plt.close()
