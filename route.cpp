@@ -155,12 +155,15 @@ double route::get_c11_fitness(int i_index, const customer &park, const customer 
 		{
 			continue;
 		}
+		visit other = initialise_insertion(i_index, park, k, input);
 		double d_pk = input.getDistance(park.id, k.id);
-		double curr = fmin(k.end + d_pk, vis.getEarliestDeparture()) - fmax(fmax(k.start - d_pk, 0), fmax(vis.arrival, vis.getEarliestStart()));
-		// printf("Park:%d, Cust:%d, Other:%d, Overlap:%.2f\n", park.id, u.id - input.getNumParking(), k.id - input.getNumParking(), curr);
+		double curr = fmin(other.getEarliestDeparture(), vis.getEarliestDeparture()) - fmax(other.getEarliestStart(), fmax(vis.arrival, vis.getEarliestStart()));
+		double normalised = curr / (other.getEffectiveServiceTime());
+		double scaled = 6 * (exp(normalised) - 1);
+		// printf("Overlap:%.2f, normalised:%.2f, scaled:%.2f\n", curr, normalised, scaled);
 		// printf("Arrival:%.2f, earliest dept:%.2f\n", vis.arrival, vis.getEarliestDeparture());
 		if (curr > 0)
-			c_11 += curr;
+			c_11 += scaled;
 	}
 	return c_11;
 }
@@ -220,7 +223,7 @@ bool route::check_feasibility(const problem &input)
 		}
 		else
 		{
-			if (prev.arrival != curr.arrival)
+			if (abs(prev.arrival - curr.arrival) > 0.001)
 			{
 				print(stdout);
 				prev.print(stdout);
@@ -252,7 +255,7 @@ bool route::check_feasibility(const problem &input)
 		}
 		else
 		{
-			if (curr.arrival != next.arrival)
+			if (abs(curr.arrival - next.arrival) > 0.001)
 			{
 				print(stdout);
 				curr.print(stdout);

@@ -33,9 +33,11 @@ int main(int argc, char *argv[])
 
 	solution solu;
 	solu.solomon(input, lambda, alpha1);
-	solu.print(stdout);
 
 	clock_t end = clock();
+	printf("%.3f second\n", ((double)(end)-start) / CLOCKS_PER_SEC);
+
+	solu.print(stdout);
 
 	for (auto route : solu.routes)
 	{
@@ -45,6 +47,5 @@ int main(int argc, char *argv[])
 
 	solu.clear();
 
-	printf("%.3f second\n", ((double)(end)-start) / CLOCKS_PER_SEC);
 	return 0;
 }

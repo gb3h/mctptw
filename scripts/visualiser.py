@@ -25,7 +25,7 @@ def load(filename, axes):
     customers.clear()
     depot.clear()
     f = open(filename, "r")
-    _ = int(f.readline().strip())
+    _ = f.readline().strip()
     RADIUS = float(f.readline().strip())
     num_v = int(f.readline().strip())
     num_w = int(f.readline().strip())
@@ -115,6 +115,7 @@ def run_mctptw(command, filename, params):
     output = subprocess.check_output(
         full_input).decode("utf-8").split('\n')
 
+    output = output[1:]
     n_routes = int(output[0].split()[0])
     dist = float(output[1].split()[0])
     bot_dist = float(output[2].split()[0])
@@ -125,53 +126,53 @@ def run_mctptw(command, filename, params):
     return (routes, dist, bot_dist)
 
 
-# if __name__ == "__main__":
-#     if len(sys.argv) < 2:
-#         raise Exception('No file given')
-#     filename = sys.argv[1]
-#     params = ["1", "0.1"]
-
-#     if len(sys.argv) == 5:
-#         params[0] = sys.argv[3]
-#         params[1] = sys.argv[4]
-
-#     _, axes = plt.subplots()
-#     axes.set_aspect(1)
-
-#     load(filename, axes)
-
-#     if len(sys.argv) > 2:
-#         command = sys.argv[2]
-#         res = run_mctptw(command, filename, params)
-#         draw_routes(res, axes)
-
-#     plt.xlabel("X Coordinate")
-#     plt.ylabel("Y Coordinate")
-#     plt.legend(bbox_to_anchor=(1.5, 1))
-#     plt.show()
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         raise Exception('No file given')
-    indir = sys.argv[1]
+    filename = sys.argv[1]
+    params = ["1", "0.1"]
 
-    # regex = re.compile('(0025_0100_C1_D_01)+')
-    for filename in os.listdir(indir):
-        # if re.match(regex, filename):
-        filepath = os.path.join(indir, filename)
-        if os.path.isdir(filepath):
-            print(filepath)
-            full_input = os.path.join(filepath, f'{filename}.txt')
+    if len(sys.argv) == 5:
+        params[0] = sys.argv[3]
+        params[1] = sys.argv[4]
 
-            _, axes = plt.subplots()
-            axes.set_aspect(1)
+    _, axes = plt.subplots()
+    axes.set_aspect(1)
 
-            load(full_input, axes)
+    load(filename, axes)
 
-            outpath = os.path.join(filepath, filename)
-            plt.xlabel("X Coordinate")
-            plt.ylabel("Y Coordinate")
-            plt.legend(bbox_to_anchor=(1.5, 1))
-            plt.savefig(outpath)
-            axes.remove()
-            plt.close()
+    if len(sys.argv) > 2:
+        command = sys.argv[2]
+        res = run_mctptw(command, filename, params)
+        draw_routes(res, axes)
+
+    plt.xlabel("X Coordinate")
+    plt.ylabel("Y Coordinate")
+    plt.legend(bbox_to_anchor=(1.5, 1))
+    plt.show()
+
+# if __name__ == "__main__":
+#     if len(sys.argv) < 2:
+#         raise Exception('No file given')
+#     indir = sys.argv[1]
+
+#     # regex = re.compile('(0025_0100_C1_D_01)+')
+#     for filename in os.listdir(indir):
+#         # if re.match(regex, filename):
+#         filepath = os.path.join(indir, filename)
+#         if os.path.isdir(filepath):
+#             print(filepath)
+#             full_input = os.path.join(filepath, f'{filename}.txt')
+
+#             _, axes = plt.subplots()
+#             axes.set_aspect(1)
+
+#             load(full_input, axes)
+
+#             outpath = os.path.join(filepath, filename)
+#             plt.xlabel("X Coordinate")
+#             plt.ylabel("Y Coordinate")
+#             plt.legend(bbox_to_anchor=(1.5, 1))
+#             plt.savefig(outpath)
+#             axes.remove()
+#             plt.close()
