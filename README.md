@@ -10,7 +10,7 @@ E.g.: `g++ -o mctptw.out *.cpp`
 
 Running: `./mctptw.out input_file [lambda alpha_1]`
 
-E.g.: `./mctptw.out covering_problems/0025_0075_RC208_CTW_CC.txt 1 0.3`
+E.g.: `./mctptw.out covering_problems/0025_0100_C1_D_01/0025_0100_C1_D_01.txt 0 0.5`
 
 ## Problem Description
 
@@ -23,8 +23,8 @@ When every vertex in W is covered by exactly one vertex in V, we get a reduction
 
 ## Benchmark Problem Sets (MCTPTW)
 
-- [MCTPTW problem sets] (25 parking spots, 75 customers)
-  Generated from Solomon's problem sets using the python script in /scripts/coverter.py
+- [MCTPTW problem sets] (25 parking spots - 100 customers, 25 parking spots - 200 customers)
+  Generated from Solomon's problem sets.
 
 ## Benchmark Problem Sets (VRPTW)
 
