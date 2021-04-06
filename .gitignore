@@ -2,3 +2,4 @@ mctptw
 *.out
 old/
 params/
+.DS_Store
